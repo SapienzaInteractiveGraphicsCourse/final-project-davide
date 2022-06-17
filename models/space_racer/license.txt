@@ -1,0 +1,11 @@
+Model Information:
+* title:	Space Racer
+* source:	https://sketchfab.com/3d-models/space-racer-5864cf03e4fe4993ad736fe3704c070f
+* author:	damotime (https://sketchfab.com/damotime)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Space Racer" (https://sketchfab.com/3d-models/space-racer-5864cf03e4fe4993ad736fe3704c070f) by damotime (https://sketchfab.com/damotime) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
