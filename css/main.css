@@ -3,15 +3,25 @@ body {
     height: 100vh;
 }
   
+@font-face {
+    font-family: 'SFDistantGalaxy';
+    src: url('SFDistantGalaxy.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
 #score {
     position: absolute;
     left: 0;
     top: 0;
+    width: 18%;
+    height: fit-content;
+    font-size: 20pt;
     color: white;
     background-color: black;
     border: 1px solid white;
     padding: 0.5rem;
-    font-family: monospace;
+    font-family: 'SFDistantGalaxy';
     margin-left: 0.5rem;
 }
 
