@@ -4,18 +4,17 @@ import { RoundedBoxGeometry } from 'https://cdn.skypack.dev/three@0.134.0/exampl
 
 
 var character, surfBox;
+var running = false;
+var replay = false;
 var surf, surfGroup;
 var isJumping = false;
+var interval1,interval2;
 var color = 0x000000;
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 100 );
 const renderer = new THREE.WebGLRenderer();
 const texloader = new THREE.TextureLoader();
 const lanes_tex = texloader.load('images/silver_texture.jpg');
-var lightColor = 0x11ffEee
-const material3 = new THREE.MeshPhongMaterial({ 
-  color: lightColor, 
-});
 var speed = 0.04;
 const charParent = new THREE.Group();
 scene.add(charParent);
@@ -28,7 +27,6 @@ const obstacles_frequency = 8;
 const visible_planets = [];
 const pending_planets = [];
 const objectsBoxes = [];
-const objects = [];
 const trajectories = [
   {point_x : 10, point_y : 2, point_z : -100, x_speed : 0.01, z_speed : 0.3},
   {point_x : -10.3, point_y : 2, point_z : -100, x_speed : -0.01, z_speed : 0.3},
@@ -43,13 +41,28 @@ const trajectories = [
   {point_x : -10.1, point_y : 18, point_z : -100, x_speed : -0.01, z_speed : 0.3},
   {point_x : 15.1, point_y : -4, point_z : -100, x_speed : 0.01, z_speed : 0.3}
 ] 
-var last_collision;
 var total_score_div = document.getElementById('total_score');
 var distance_div = document.getElementById('distance');
 var points_div = document.getElementById('points');
+
+var gameOver_div = document.getElementById('game_over');
+var tscoreGameOver_div = document.getElementById('game_over_tscore');
+var distanceGameOver_div= document.getElementById('game_over_distance');
+var pointsGameOver_div = document.getElementById('game_over_points');
+
 var points = 0;
 var distance = 0;
 var idleRotation = 1;
+var idleCont = 0;
+var lightColor = 0x11ffEee;
+const material3 = new THREE.MeshPhongMaterial({ 
+  color: lightColor, 
+});
+var listener = new THREE.AudioListener();
+var sound = new THREE.Audio( listener );
+var vol_on = true;
+var loaded = 0;
+
 
 window.onload  = createScene;
 
@@ -62,15 +75,11 @@ function createScene(){
   camera.rotation.y += 0;
   camera.rotation.z += 0;
 
-  var listener = new THREE.AudioListener();
   camera.add( listener );
-  var sound = new THREE.Audio( listener );
   var audioLoader = new THREE.AudioLoader();
   audioLoader.load( 'sounds/the_blue_danube.mp3', function( buffer ) {
-      sound.setBuffer( buffer );
-      sound.setLoop(true);
-      sound.setVolume(0.5);
-      sound.play();
+    sound.setBuffer( buffer );
+    loaded++;
   },
               function ( x ) {},
               function ( err ) {
@@ -81,28 +90,17 @@ function createScene(){
 
   renderer.setSize( window.innerWidth, window.innerHeight );
   document.body.appendChild( renderer.domElement );
-
-  const light = new THREE.DirectionalLight( 0xffffff, 0.95 );
-  light.castShadow = true;
-  scene.add( light );
-  light.position.set( -3, 6, 5 );
-              
-  const light2 = new THREE.DirectionalLight( 0xffffff, 0.2 );
-  light2.castShadow = true;
-  console.log(light2);
-  scene.add( light2 );
-  light2.position.set( -5, 6, 5 );
-
-
-
+  
   const ambientLight = new THREE.AmbientLight();
   scene.add(ambientLight);
-  
+  ObjectCreator.createLight(0xffffff, 0.95, [-3,7,5]);
+  ObjectCreator.createLight(0xffffff, 0.2, [-5,7,5]);
   
   const background_loader = new THREE.TextureLoader();
   background_loader.load('images/space_tex.jpg' , function(texture)
             {
              scene.background = texture;  
+             loaded++;
             });
 
 
@@ -143,18 +141,8 @@ function createScene(){
     character.position.y += 1;
     surfBox = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3()).setFromObject(surf);
     document.addEventListener("keydown", onKeyDown, false);
+    loaded++;
     animate();
-    setInterval(function () {speed += 0.001}, 11000);
-    setInterval(function () {
-      var planet = pending_planets.pop();
-      if( planet != undefined){
-        var tr = trajectories[Math.floor(Math.random() * trajectories.length)]
-        planet.position.set(tr.point_x,tr.point_y,tr.point_z);
-        visible_planets.push([planet, [tr.x_speed,tr.z_speed]]);
-      }
-    }, 25000*speed*25);  
-    setInterval(function () {idleRotation = -idleRotation}, 1500);
-    Animator.legRotation();
 }, undefined, function ( error ) {
   console.error( error );
 } );
@@ -183,12 +171,12 @@ class ObjectCreator {
     const geometry1 = new RoundedBoxGeometry( 1, 0.22, 0.6, 6, 2 );
     const material1 = new THREE.MeshBasicMaterial({
       color: 0xffffff,
-      map: texloader.load('images/surf_tex.jpg'),
+      map: texloader.load('images/surf_tex2.jpg'),
     });
     const surf = new THREE.Mesh( geometry1, material1 );
     const geometry2 = new THREE.CylinderBufferGeometry(0.08, 0.08, 0.16, 16);
     const material2 = new THREE.MeshBasicMaterial({ 
-      color: 0xffffff, 
+      color: 0xfaa100, 
     });
     const reactor1 = new THREE.Mesh(geometry2, material2);
     const reactor2 = new THREE.Mesh(geometry2, material2);
@@ -207,8 +195,8 @@ class ObjectCreator {
     reactor2.position.x += 0.5;
     reactor2.position.y -= 0.01;
     
+    
     const geometry3 = new THREE.CylinderBufferGeometry(0.04, 0.05, 0.015, 16);
-
     const reactorLight1 = new THREE.Mesh(geometry3, material3);
     const reactorLight2 = new THREE.Mesh(geometry3, material3);
 
@@ -233,6 +221,7 @@ class ObjectCreator {
     surf.position.y -= 0.04;
     surfGroup.position.x -= 10;
     surf.position.z += 0.04;
+    loaded++;
     return surf;
   }
 
@@ -267,6 +256,7 @@ class ObjectCreator {
     const pointBox = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3()).setFromObject(point);
     pointBox.userData = { type: 'p' };
     objectsBoxes.push(pointBox);
+    loaded++;
   }
   
   static createObstacle(i){
@@ -276,6 +266,7 @@ class ObjectCreator {
     const geometry = new THREE.BoxBufferGeometry(1,1,1);
     const material = new THREE.MeshBasicMaterial({
       color: 0x858583,
+      map: texloader.load('images/obs_tex.jpg'),
     });
     const point = new THREE.Mesh( geometry, material );
     objectsParent.add(point);
@@ -286,6 +277,14 @@ class ObjectCreator {
     const obstacleBox = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3()).setFromObject(point);
     obstacleBox.userData = { type: 'o' };
     objectsBoxes.push(obstacleBox);
+    loaded++;
+  }
+
+  static createLight(color, intensity, position){
+    const light = new THREE.DirectionalLight( color, intensity );
+    light.castShadow = true;
+    scene.add( light );
+    light.position.set( position[0], position[1], position[2] );
   }
 }
 
@@ -342,32 +341,86 @@ class Animator {
   }
 
   static idleAnimation(){
+    idleCont += idleRotation;
+    if(idleCont == 100 || idleCont == -1) idleRotation = -idleRotation;
     character.getObjectByName("spine_013").rotation.z += 0.004*idleRotation;
     character.getObjectByName("Joint_1_016").rotation.x -= 0.003*idleRotation;
     character.getObjectByName("R_shoulder_031").rotation.x -= 0.004*idleRotation;
   }
 
   static legRotation(){
-    var rot = character.getObjectByName("L_ankle1_03").rotation
-    var rot_x = rot.z;
-    createjs.Tween.get(rot, { loop: true }).wait(2000).to({ z: rot_x+Math.PI*0.15 }, 2*470, createjs.Ease.getPowInOut(3)).wait(10000).to({ z: rot_x }, 2*470, createjs.Ease.getPowInOut(3)).wait(10000);
+    var rot = character.getObjectByName("L_ankle1_03").rotation;
+    var rot_z = rot.z;
+    createjs.Tween.get(rot, { loop: true }).wait(2000).to({ z: rot_z+Math.PI*0.15 }, 2*470, createjs.Ease.getPowInOut(3)).wait(10000).to({ z: rot_z }, 2*470, createjs.Ease.getPowInOut(3)).wait(9500);
+  }
+
+  static elbowRotation(val,time){  
+    var rot = character.getObjectByName("R_elbow_036").rotation;
+    var rot_y = rot.y;
+    createjs.Tween.get(rot, { loop: true }).wait(2000).to({ y: rot_y+val*Math.PI*0.20 }, 2*520, createjs.Ease.getPowInOut(3)).wait(100).to({ y: rot_y }, 2*500, createjs.Ease.getPowInOut(3)).wait(time);
   }
 
 }
-
-
-
 
 window.addEventListener( 'resize', onWindowResize, false );
 function onWindowResize(){
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize( window.innerWidth, window.innerHeight );
-}  
+} 
+
+document.getElementById('vol_btn').onclick = () => {
+  if( vol_on){
+    vol_on = false;
+    document.getElementById('vol_btn').innerHTML = '<i class="material-icons" style="color:#000000;font-size: 2.6rem;">volume_off</i>';
+  }else{
+    vol_on = true;
+    document.getElementById('vol_btn').innerHTML = '<i class="material-icons" style="color:#000000;font-size: 2.6rem;">volume_up</i>';
+  }
+};
+
+document.getElementById('replay_btn').onclick = () => {
+  gameOver_div.style.display = 'none';
+  resetGame();
+};  
+
+
+function resetGame() {
+  lanes_tex.offset.x = 0;
+  speed = 0.04;
+  lane = 1;
+  distance = 0;
+  points = 0;
+  replay = true;
+  character.position.set(0.102, 1, 0);
+  clearInterval(interval1);
+  clearInterval(interval2);
+  for( var i = 0; i < objectsParent.children.length; i++){
+    var child = objectsParent.children[i];
+    child.position.z = -objectsParent.position.z-85-Math.floor(Math.random() * 160);
+    objectsBoxes[i].setFromObject(child);
+  }
+  running = true;
+}
+
+
+document.getElementById('start_btn').onclick = () => {
+  running = true;
+  document.getElementById('menu').style.display = 'none';
+};
+
+document.getElementById('menu_btn').onclick = () => {
+  resetGame();
+  running = true;
+  document.getElementById('game_over').style.display = 'none';
+  document.getElementById('menu').style.display = 'grid';
+};
+
 
 function onKeyDown(event){
   var code = event.keyCode;
   switch(code){
+    case 38:
     case 32: //space
       if(!isJumping){
         var rotate = false;
@@ -375,6 +428,7 @@ function onKeyDown(event){
         Animator.jumpUp(character,rotate);
       }
       break;
+    case 37:
     case 65: // a
       if(!isJumping && lane != 0){
         lane--;
@@ -383,6 +437,7 @@ function onKeyDown(event){
         Animator.jumpLeft(character,rotate);
       }
       break;
+    case 39:
     case 68: //d
       if(!isJumping && lane != 2){
         lane++;
@@ -398,7 +453,9 @@ function onKeyDown(event){
 
 function animate() {
   requestAnimationFrame( animate );
-  render();
+  if(running){
+    render();
+  }
 }
 
 function checkCollisions() {
@@ -416,13 +473,23 @@ function checkCollisions() {
         points_div.innerText = "Points: " + points;
       }else{
         console.log("obstacle");
+        gameOver();
+        
         //alert("Game Over");
       }
     }
   }
 }
 
-
+function gameOver(){
+  running = false;
+  tscoreGameOver_div.innerHTML = "Total Score: " + (parseInt(distance) + points*10);
+  distanceGameOver_div.innerHTML = "Distance: " + parseInt(distance);
+  pointsGameOver_div.innerHTML = "Points: " + points;
+  setTimeout(() => {      
+    gameOver_div.style.display = 'grid';
+  }, 1000);
+}
 
 function updateObjectsPosition(){
   var i = 0;
@@ -457,6 +524,12 @@ function updatePlanets(){
   }
 }
 
+function updateScore(){
+  distance += speed*2.5;
+  distance_div.innerHTML = "Distance: " + parseInt(distance);
+  total_score_div.innerHTML = "Total Score: " + (parseInt(distance) + points*10);
+}
+
 
 /*
 Joint_2_2_033 : braccio destro
@@ -473,23 +546,45 @@ L_leg_01 : gamba sinistra
 R_ankle_010 : caviglia destra
 hips_00
 R_shoulder_031 : spalla destra
-
-
+R_elbow_036 : gomito destro
+L_elbow_020 : gomito sinistro
 
 */
 
 function render() {
+  if(replay || loaded == 4+obstacles_frequency+points_frequency){
+    interval1 = setInterval(function () {speed += 0.001}, 11000);
+    interval2 = setInterval(function () {
+      var planet = pending_planets.pop();
+      if( planet != undefined){
+        var tr = trajectories[Math.floor(Math.random() * trajectories.length)]
+        planet.position.set(tr.point_x,tr.point_y,tr.point_z);
+        visible_planets.push([planet, [tr.x_speed,tr.z_speed]]);
+      }
+    }, 25000*speed*25);  
+    replay = false;
+  }
+  if(loaded == 4+obstacles_frequency+points_frequency) {
+    if(vol_on) {
+      sound.setLoop(true);
+      sound.setVolume(0.5);
+      sound.play();
+    }
+
+    Animator.elbowRotation(1,11000);
+    Animator.legRotation();
+    loaded = 0;
+  }
   checkCollisions();
   Animator.idleAnimation();
   //character.rotation.y += 0.003; 
-  //character.getObjectByName("L_leg_01").rotation.x += 0.002*idleRotation;
+  //character.getObjectByName("R_elbow_036").rotation.y += 0.003;
   objectsParent.position.z += speed*10;
   updatePlanets();
   surfBox.setFromObject(surf);
   updateObjectsPosition();
-  distance += speed*2.5;
-  distance_div.innerHTML = "Distance: " + parseInt(distance);
-  total_score_div.innerHTML = "Total Score: " + (parseInt(distance) + points*10);
+  updateScore();
+  
   lanes_tex.offset.x = (lanes_tex.offset.x+speed*2.5)%4 - 2;
   renderer.render(scene, camera);
 }

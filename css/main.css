@@ -1,8 +1,9 @@
 body { 
     margin: 0; 
     height: 100vh;
+    
 }
-  
+
 @font-face {
     font-family: 'SFDistantGalaxy';
     src: url('SFDistantGalaxy.ttf') format('truetype');
@@ -16,9 +17,8 @@ body {
     top: 0;
     width: 18%;
     height: fit-content;
-    font-size: 20pt;
+    font-size: 1.9rem;
     color: white;
-    background-color: black;
     border: 1px solid white;
     padding: 0.5rem;
     font-family: 'SFDistantGalaxy';
@@ -34,7 +34,117 @@ body {
     background-color: white;
     margin: 0.5rem 0;
   }
+#game_over,
+#menu {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: grid;
+    background-image: url("../images/space_tex.jpg");
+    place-items: center;
+    font-family: 'SFDistantGalaxy';
+    color: white;
+}
+
+#game_over {
+  display: none;
+}
+
+#game_over_column,
+#menu_column {
+    text-align: center;
+}
+
+#game_over_title,
+#menu_title {
+    font-size: 7rem;
+    margin-bottom: 5rem;
+}
+
+
+#game_over_tscore{
+  display: flex;
+  justify-content: center;
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+}
+
+#game_over_tscore,
+#game_over_points,
+#game_over_distance {
+  font-size: 2rem;
+  margin-left: 0.5rem;
+  margin-bottom: 1rem;
+}
 
 canvas { 
     display: block;
 }
+
+#replay_btn{
+  margin-top: 1.5rem;
+}
+.button-80 {
+  background: #fff;
+  backface-visibility: hidden;
+  border-radius: .375rem;
+  border-style: solid;
+  border-width: .125rem;
+  box-sizing: border-box;
+  color: #212121;
+  cursor: pointer;
+  display: inline-block;
+  font-family: 'SFDistantGalaxy';
+  font-size: 1.625rem;
+  font-weight: 700;
+  letter-spacing: -.01em;
+  line-height: 1.3;
+  padding: .875rem 1.125rem;
+  position: relative;
+  text-align: left;
+  text-decoration: none;
+  transform: translateZ(0) scale(1);
+  transition: transform .2s;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  margin-bottom: 2rem;
+}
+
+.button-80:not(:disabled):hover {
+  transform: scale(1.05);
+}
+
+.button-80:not(:disabled):hover:active {
+  transform: scale(1.05) translateY(.125rem);
+}
+
+.button-80:focus {
+  outline: 0 solid transparent;
+}
+
+.button-80:focus:before {
+  content: "";
+  left: calc(-1*.375rem);
+  pointer-events: none;
+  position: absolute;
+  top: calc(-1*.375rem);
+  transition: border-radius;
+  user-select: none;
+}
+
+.button-80:focus:not(:focus-visible) {
+  outline: 0 solid transparent;
+}
+
+.button-80:focus:not(:focus-visible):before {
+  border-width: 0;
+}
+
+.button-80:not(:disabled):active {
+  transform: translateY(.125rem);
+}
+
+

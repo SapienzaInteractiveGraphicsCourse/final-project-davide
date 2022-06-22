@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 </head>
 <body>
  <div id="score">
@@ -15,7 +16,30 @@
      <div id="distance">Distance: </div>
      <div id="points">Points: 0</div>
  </div>
+ <div id="menu">
+    <div id="menu_column">
+      <div id="menu_title">Surfer Odyssey</div>
+      <button id="start_btn" class="button-80">Start</button>
+      <br>
+      <button class="button-80" id="vol_btn"><i class="material-icons" style="color:#000000;font-size: 2.6rem;">volume_up</i></button>
+    </div>
+ </div>
+
+ <div id="game_over">
+  <div id="game_over_column">
+    <div id="game_over_title">Game over!</div>
+    <div id="game_over_tscore">Total Score: <div id="game-over-score"></div></div>
+    <div id="game_over_distance">Distance: <div id="game-over-distance"></div></div>
+    <div id="game_over_points">Points: <div id="game-over-score"></div></div>
+    <button id="replay_btn" class="button-80">Play Again</button>
+    <br>
+    <button id="menu_btn" class="button-80">Menu</button>
+  </div>
+</div>
+ 
+ 
 </body>
+
 
 <script src="https://code.createjs.com/1.0.0/tweenjs.min.js"></script>
 <script type="module" src="./main.js"></script>
