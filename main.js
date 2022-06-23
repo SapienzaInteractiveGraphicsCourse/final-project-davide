@@ -1,7 +1,7 @@
 import * as THREE from 'https://cdn.skypack.dev/three@0.134.0/build/three.module.js';
 import { GLTFLoader } from 'https://cdn.skypack.dev/three@0.134.0/examples/jsm/loaders/GLTFLoader.js';
 import { RoundedBoxGeometry } from 'https://cdn.skypack.dev/three@0.134.0/examples/jsm/geometries/RoundedBoxGeometry.js';
-
+import { TWEEN } from 'https://cdn.skypack.dev/three@0.134.0/examples/jsm/libs/tween.module.min';
 
 var character, surfBox;
 var running = false;
@@ -296,48 +296,82 @@ class Animator {
     var lArm = character.getObjectByName("L_arm_019").rotation;
     isJumping = true;
     var rot_x = object.rotation.x;
-    createjs.Tween.get(object.rotation, { loop: false }).to({ x: rot_x+Math.PI*0.13 }, 470/speed/25, createjs.Ease.getPowInOut(3)).to({ x: rot_x }, 470/speed/25, createjs.Ease.getPowInOut(3));
+    var rotUp = new TWEEN.Tween(object.rotation).to({ x: rot_x+Math.PI*0.13 }, 470/speed/25);
+    var rotDown = new TWEEN.Tween(object.rotation).to({ x: rot_x }, 470/speed/25);
+    rotUp.chain(rotDown);
+    rotUp.easing(TWEEN.Easing.Cubic.Out);
+    rotUp.start();
     if(rotate){
       var rot_y = object.rotation.y;
-      createjs.Tween.get(object.rotation, { loop: false }).to({ y: rot_y+Math.PI*2 }, 940/speed/25, createjs.Ease.getPowInOut(3));
+      var roll = new TWEEN.Tween(object.rotation).to({ y: rot_y+Math.PI*2  }, 750/speed/25);
+      roll.start();
     }else{
       rot_x = rArm.x;
-      createjs.Tween.get(rArm, { loop: false }).to({ x: rot_x-Math.PI*0.3 }, 460/speed/25, createjs.Ease.getPowInOut(3)).to({ x: rot_x }, 460/speed/25, createjs.Ease.getPowInOut(3));
+      var rotrArmUp = new TWEEN.Tween(rArm).to({ x: rot_x-Math.PI*0.3 }, 460/speed/25);
+      var rotrArmDown = new TWEEN.Tween(rArm).to({ x: rot_x}, 460/speed/25);
+      rotrArmUp.chain(rotrArmDown);
+      rotrArmUp.easing(TWEEN.Easing.Cubic.Out);
+      rotrArmUp.start();
       rot_x = lArm.x;
-      createjs.Tween.get(lArm, { loop: false }).to({ x: rot_x+Math.PI*0.3 }, 460/speed/25, createjs.Ease.getPowInOut(3)).to({ x: rot_x }, 460/speed/25, createjs.Ease.getPowInOut(3));
+      var rotlArmUp = new TWEEN.Tween(lArm).to({ x: rot_x+Math.PI*0.3 }, 460/speed/25);
+      var rotlArmDown = new TWEEN.Tween(lArm).to({ x: rot_x}, 460/speed/25);
+      rotlArmUp.chain(rotlArmDown);
+      rotlArmUp.easing(TWEEN.Easing.Cubic.Out);
+      rotlArmUp.start();
     }
     var mod_y = object.position.y; 
-    createjs.Tween.get(object.position, { loop: false }).to({ y: mod_y+2.8 }, 470/speed/25, createjs.Ease.getPowInOut(3)).wait(0).to({ y: mod_y }, 470/speed/25, createjs.Ease.getPowInOut(3)).call(function() {
+    var jumpUp = new TWEEN.Tween(object.position).to({y : mod_y+2.8}, 470/speed/25);
+    var jumpDown = new TWEEN.Tween(object.position).to({y : mod_y}, 470/speed/25).onComplete(function () {
       isJumping = false;
     });
-  }
+    jumpUp.chain(jumpDown);
+    jumpUp.easing(TWEEN.Easing.Cubic.Out);
+    jumpUp.start();
 
+  }
+  //[mod_y + 0.3, mod_y + 0.6, mod_y + 0.9, mod_y +1.2, mod_y+1.5]
+  //[mod_y+1.5, mod_y +1.2, mod_y + 0.9, mod_y + 0.6, mod_y + 0.3, mod_y]
   static jumpLeft(object, rotate){
     isJumping = true;
     var mod_y = object.position.y; 
-    createjs.Tween.get(object.position, { loop: false }).to({ y: mod_y+1.5 }, 450/speed/25, createjs.Ease.getPowInOut(3)).to({ y: mod_y }, 450/speed/25, createjs.Ease.getPowInOut(3));
+    var jumpLeftYUp = new TWEEN.Tween(object.position).to({y: mod_y+1.5}, 430/speed/25);
+    jumpLeftYUp.easing(TWEEN.Easing.Quadratic.Out);
+    var jumpLeftYDown = new TWEEN.Tween(object.position).to({y: mod_y}, 430/speed/25);
+    jumpLeftYDown.easing(TWEEN.Easing.Quadratic.In);
+    jumpLeftYUp.chain(jumpLeftYDown);
+    jumpLeftYUp.start();
     if(rotate){
-      var rot = object.rotation.y;
-      createjs.Tween.get(object.rotation, { loop: false }).to({ y: rot+Math.PI*2 }, 900/speed/25, createjs.Ease.getPowInOut(3));
+      var rot_y = object.rotation.y;
+      var roll = new TWEEN.Tween(object.rotation).to({ y: rot_y+Math.PI*2  }, 600/speed/25);
+      roll.start();
     }
     var mod_x = object.position.x; 
-    createjs.Tween.get(object.position, { loop: false }).to({ x: mod_x-1.9 }, 450/speed/25, createjs.Ease.getPowInOut(3)).to({ x: mod_x-3.8 }, 450/speed/25, createjs.Ease.getPowInOut(3)).call(function() {
+    var jumpLeftXUp = new TWEEN.Tween(object.position).to({x: mod_x-3.8}, 860/speed/25).onComplete(function () {
       isJumping = false;
     });
+    jumpLeftXUp.start();
   }
 
   static jumpRight(object, rotate){
     isJumping = true;
     var mod_y = object.position.y; 
-    createjs.Tween.get(object.position, { loop: false }).to({ y: mod_y+1.5 }, 450/speed/25, createjs.Ease.getPowInOut(3)).wait(0).to({ y: mod_y }, 450/speed/25, createjs.Ease.getPowInOut(3));
+    var jumpRightYUp = new TWEEN.Tween(object.position).to({y: mod_y+1.5}, 430/speed/25);
+    jumpRightYUp.easing(TWEEN.Easing.Quadratic.Out);
+    var jumpRightYDown = new TWEEN.Tween(object.position).to({y: mod_y}, 430/speed/25);
+    jumpRightYDown.easing(TWEEN.Easing.Quadratic.In);
+    jumpRightYUp.chain(jumpRightYDown);
+    jumpRightYUp.start();
+
     if(rotate){
-      var rot = object.rotation.y;
-      createjs.Tween.get(object.rotation, { loop: false }).to({ y: rot-Math.PI*2 }, 900/speed/25, createjs.Ease.getPowInOut(3));
+      var rot_y = object.rotation.y;
+      var roll = new TWEEN.Tween(object.rotation).to({ y: rot_y-Math.PI*2  }, 600/speed/25);
+      roll.start();
     }
     var mod_x = object.position.x; 
-    createjs.Tween.get(object.position, { loop: false }).to({ x: mod_x+1.9 }, 450/speed/25, createjs.Ease.getPowInOut(3)).wait(0).to({ x: mod_x+3.8 }, 450/speed/25, createjs.Ease.getPowInOut(3)).call(function() {
+    var jumpLeftXUp = new TWEEN.Tween(object.position).to({x: mod_x+3.8}, 860/speed/25).onComplete(function () {
       isJumping = false;
     });
+    jumpLeftXUp.start();
   }
 
   static idleAnimation(){
@@ -357,6 +391,15 @@ class Animator {
   static elbowRotation(val,time){  
     var rot = character.getObjectByName("R_elbow_036").rotation;
     var rot_y = rot.y;
+    /*
+    var rotArmUp = new TWEEN.Tween(rot).to({y: rot_y+val*Math.PI*0.20}, 2*520);
+    var rotArmDown = new TWEEN.Tween(rot).to({y: rot_y}, 2*500);
+    //rotArmDown.delay(100);
+    rotArmUp.chain(rotArmDown);
+    //rotArmUp.delay(2000);
+    //rotArmUp.repeatDelay(500)
+    //rotArmUp.repeat(Infinity);
+    rotArmUp.start();*/
     createjs.Tween.get(rot, { loop: true }).wait(2000).to({ y: rot_y+val*Math.PI*0.20 }, 2*520, createjs.Ease.getPowInOut(3)).wait(100).to({ y: rot_y }, 2*500, createjs.Ease.getPowInOut(3)).wait(time);
   }
 
@@ -433,7 +476,7 @@ function onKeyDown(event){
       if(!isJumping && lane != 0){
         lane--;
         var rotate = false;
-        if(Math.floor(Math.random() * 2) == 1) rotate = true;
+        if(Math.floor(Math.random() * 3) == 1) rotate = true;
         Animator.jumpLeft(character,rotate);
       }
       break;
@@ -442,7 +485,7 @@ function onKeyDown(event){
       if(!isJumping && lane != 2){
         lane++;
         var rotate = false;
-        if(Math.floor(Math.random() * 2) == 1) rotate = true;
+        if(Math.floor(Math.random() * 3) == 1) rotate = true;
         Animator.jumpRight(character,rotate);
       }
       break;
@@ -453,6 +496,7 @@ function onKeyDown(event){
 
 function animate() {
   requestAnimationFrame( animate );
+  TWEEN.update();
   if(running){
     render();
   }
