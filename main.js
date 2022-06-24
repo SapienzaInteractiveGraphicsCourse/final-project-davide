@@ -81,7 +81,7 @@ function createScene(){
   audioLoader.load( 'sounds/the_blue_danube.mp3', function( buffer ) {
     sound.setBuffer( buffer );
     sound.setLoop(true);
-    sound.setVolume(0.5);
+    sound.setVolume(0.6);
     loaded++;
   },
               function ( x ) {},
@@ -174,7 +174,7 @@ class ObjectCreator {
     const geometry1 = new RoundedBoxGeometry( 1, 0.22, 0.6, 6, 2 );
     const material1 = new THREE.MeshBasicMaterial({
       color: 0xffffff,
-      map: texloader.load('images/surf_tex2.jpg'),
+      map: texloader.load('images/surf_tex.jpg'),
     });
     const surf = new THREE.Mesh( geometry1, material1 );
     const geometry2 = new THREE.CylinderBufferGeometry(0.08, 0.08, 0.16, 16);
@@ -249,7 +249,7 @@ class ObjectCreator {
   static createPoint(){
     const geometry = new THREE.BoxBufferGeometry( 1, 1, 1 );
     const material = new THREE.MeshPhongMaterial({
-      color: 0xffff31,
+      color: 0xffd700,
     });
     const point = new THREE.Mesh( geometry, material );
     objectsParent.add(point);
@@ -264,12 +264,18 @@ class ObjectCreator {
   
   static createObstacle(i){
     var h;
-    if(i%2 == 0) h = 2;
-    else h = 5;
+    var tex;
+    if(i%2 == 0) {
+      h = 2;
+      tex = texloader.load('images/metal_tex2.jpg');
+    }else {
+      h = 5;
+      tex = texloader.load('images/metal_tex.jpg');
+    }
     const geometry = new THREE.BoxBufferGeometry(1,1,1);
     const material = new THREE.MeshBasicMaterial({
-      color: 0x858583,
-      map: texloader.load('images/obs_tex.jpg'),
+      color: 0xffffff,
+      map: tex,
     });
     const point = new THREE.Mesh( geometry, material );
     objectsParent.add(point);
@@ -337,19 +343,19 @@ class Animator {
   static jumpLeft(object, rotate){
     isJumping = true;
     var mod_y = object.position.y; 
-    var jumpLeftYUp = new TWEEN.Tween(object.position).to({y: mod_y+1.5}, 430/speed/25);
+    var jumpLeftYUp = new TWEEN.Tween(object.position).to({y: mod_y+1.5}, 420/speed/25);
     jumpLeftYUp.easing(TWEEN.Easing.Quadratic.Out);
-    var jumpLeftYDown = new TWEEN.Tween(object.position).to({y: mod_y}, 430/speed/25);
+    var jumpLeftYDown = new TWEEN.Tween(object.position).to({y: mod_y}, 420/speed/25);
     jumpLeftYDown.easing(TWEEN.Easing.Quadratic.In);
     jumpLeftYUp.chain(jumpLeftYDown);
     jumpLeftYUp.start();
     if(rotate){
       var rot_y = object.rotation.y;
-      var roll = new TWEEN.Tween(object.rotation).to({ y: rot_y+Math.PI*2  }, 600/speed/25);
+      var roll = new TWEEN.Tween(object.rotation).to({ y: rot_y+Math.PI*2  }, 560/speed/25);
       roll.start();
     }
     var mod_x = object.position.x; 
-    var jumpLeftXUp = new TWEEN.Tween(object.position).to({x: mod_x-3.8}, 860/speed/25).onComplete(function () {
+    var jumpLeftXUp = new TWEEN.Tween(object.position).to({x: mod_x-3.8}, 840/speed/25).onComplete(function () {
       isJumping = false;
     });
     jumpLeftXUp.start();
@@ -358,20 +364,20 @@ class Animator {
   static jumpRight(object, rotate){
     isJumping = true;
     var mod_y = object.position.y; 
-    var jumpRightYUp = new TWEEN.Tween(object.position).to({y: mod_y+1.5}, 430/speed/25);
+    var jumpRightYUp = new TWEEN.Tween(object.position).to({y: mod_y+1.5}, 420/speed/25);
     jumpRightYUp.easing(TWEEN.Easing.Quadratic.Out);
-    var jumpRightYDown = new TWEEN.Tween(object.position).to({y: mod_y}, 430/speed/25);
+    var jumpRightYDown = new TWEEN.Tween(object.position).to({y: mod_y}, 420/speed/25);
     jumpRightYDown.easing(TWEEN.Easing.Quadratic.In);
     jumpRightYUp.chain(jumpRightYDown);
     jumpRightYUp.start();
 
     if(rotate){
       var rot_y = object.rotation.y;
-      var roll = new TWEEN.Tween(object.rotation).to({ y: rot_y-Math.PI*2  }, 600/speed/25);
+      var roll = new TWEEN.Tween(object.rotation).to({ y: rot_y-Math.PI*2  }, 560/speed/25);
       roll.start();
     }
     var mod_x = object.position.x; 
-    var jumpLeftXUp = new TWEEN.Tween(object.position).to({x: mod_x+3.8}, 860/speed/25).onComplete(function () {
+    var jumpLeftXUp = new TWEEN.Tween(object.position).to({x: mod_x+3.8}, 840/speed/25).onComplete(function () {
       isJumping = false;
     });
     jumpLeftXUp.start();
@@ -388,22 +394,29 @@ class Animator {
   static legRotation(){
     var rot = character.getObjectByName("L_ankle1_03").rotation;
     var rot_z = rot.z;
-    createjs.Tween.get(rot, { loop: true }).wait(2000).to({ z: rot_z+Math.PI*0.15 }, 2*470, createjs.Ease.getPowInOut(3)).wait(10000).to({ z: rot_z }, 2*470, createjs.Ease.getPowInOut(3)).wait(9500);
+
+    var rotFoot1= new TWEEN.Tween(rot).to({z: rot_z+Math.PI*0.15}, 2*470);
+    var rotFoot2 = new TWEEN.Tween(rot).to({z: rot_z}, 2*470);
+ 
+    rotFoot1.delay(9000);
+    rotFoot2.delay(9000);
+    rotFoot1.chain(rotFoot2);
+    rotFoot2.chain(rotFoot1);
+    rotFoot1.start();
   }
 
   static elbowRotation(val,time){  
     var rot = character.getObjectByName("R_elbow_036").rotation;
     var rot_y = rot.y;
-    /*
-    var rotArmUp = new TWEEN.Tween(rot).to({y: rot_y+val*Math.PI*0.20}, 2*520);
+    
+    var rotArmUp = new TWEEN.Tween(rot).to({y: rot_y+val*Math.PI*0.21}, 2*520);
     var rotArmDown = new TWEEN.Tween(rot).to({y: rot_y}, 2*500);
-    //rotArmDown.delay(100);
+ 
+    rotArmUp.delay(11000);
+    rotArmDown.delay(150);
     rotArmUp.chain(rotArmDown);
-    //rotArmUp.delay(2000);
-    //rotArmUp.repeatDelay(500)
-    //rotArmUp.repeat(Infinity);
-    rotArmUp.start();*/
-    createjs.Tween.get(rot, { loop: true }).wait(2000).to({ y: rot_y+val*Math.PI*0.20 }, 2*520, createjs.Ease.getPowInOut(3)).wait(100).to({ y: rot_y }, 2*500, createjs.Ease.getPowInOut(3)).wait(time);
+    rotArmDown.chain(rotArmUp);
+    rotArmUp.start();
   }
 
 }
@@ -414,9 +427,6 @@ function onWindowResize(){
   camera.updateProjectionMatrix();
   renderer.setSize( window.innerWidth, window.innerHeight );
 } 
-
-
-
 
 function resetGame() {
   lanes_tex.offset.x = 0;
@@ -471,9 +481,6 @@ function setButtons(){
 }
 
 
-
-
-
 function onKeyDown(event){
   var code = event.keyCode;
   switch(code){
@@ -507,7 +514,6 @@ function onKeyDown(event){
 }
 
 
-
 function animate() {
   requestAnimationFrame( animate );
   TWEEN.update();
@@ -518,7 +524,6 @@ function animate() {
 
 function checkCollisions() {
   var i = 0;
-
   for( var i = 0; i< objectsBoxes.length; i++){
     var box = objectsBoxes[i];
     if (surfBox.intersectsBox(box)) {
