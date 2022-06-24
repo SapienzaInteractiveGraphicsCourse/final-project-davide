@@ -64,6 +64,7 @@ var vol_on = true;
 var loaded = 0;
 
 
+setButtons();
 window.onload  = createScene;
 
 function createScene(){
@@ -79,6 +80,8 @@ function createScene(){
   var audioLoader = new THREE.AudioLoader();
   audioLoader.load( 'sounds/the_blue_danube.mp3', function( buffer ) {
     sound.setBuffer( buffer );
+    sound.setLoop(true);
+    sound.setVolume(0.5);
     loaded++;
   },
               function ( x ) {},
@@ -412,20 +415,7 @@ function onWindowResize(){
   renderer.setSize( window.innerWidth, window.innerHeight );
 } 
 
-document.getElementById('vol_btn').onclick = () => {
-  if( vol_on){
-    vol_on = false;
-    document.getElementById('vol_btn').innerHTML = '<i class="material-icons" style="color:#000000;font-size: 2.6rem;">volume_off</i>';
-  }else{
-    vol_on = true;
-    document.getElementById('vol_btn').innerHTML = '<i class="material-icons" style="color:#000000;font-size: 2.6rem;">volume_up</i>';
-  }
-};
 
-document.getElementById('replay_btn').onclick = () => {
-  gameOver_div.style.display = 'none';
-  resetGame();
-};  
 
 
 function resetGame() {
@@ -443,21 +433,45 @@ function resetGame() {
     child.position.z = -objectsParent.position.z-85-Math.floor(Math.random() * 160);
     objectsBoxes[i].setFromObject(child);
   }
-  running = true;
+}
+
+function setButtons(){
+  document.getElementById('vol_btn').onclick = () => {
+    if( vol_on){
+      if(sound.isPlaying){
+        sound.stop();
+      }
+      vol_on = false;
+      document.getElementById('vol_btn').innerHTML = '<i class="material-icons" style="color:#000000;font-size: 2.6rem;">volume_off</i>';
+    }else{
+      vol_on = true;
+      document.getElementById('vol_btn').innerHTML = '<i class="material-icons" style="color:#000000;font-size: 2.6rem;">volume_up</i>';
+    }
+  };
+  
+  document.getElementById('replay_btn').onclick = () => {
+    gameOver_div.style.display = 'none';
+    running = true;
+    resetGame();
+  };  
+
+  document.getElementById('start_btn').onclick = () => {
+    if(!replay){
+      document.getElementById('loading').style.display = 'grid';
+    }
+    document.getElementById('menu').style.display = 'none';
+    running = true;
+  };
+  
+  document.getElementById('menu_btn').onclick = () => {
+    resetGame();
+    document.getElementById('game_over').style.display = 'none';
+    document.getElementById('menu').style.display = 'grid';
+  };
 }
 
 
-document.getElementById('start_btn').onclick = () => {
-  running = true;
-  document.getElementById('menu').style.display = 'none';
-};
 
-document.getElementById('menu_btn').onclick = () => {
-  resetGame();
-  running = true;
-  document.getElementById('game_over').style.display = 'none';
-  document.getElementById('menu').style.display = 'grid';
-};
 
 
 function onKeyDown(event){
@@ -516,7 +530,6 @@ function checkCollisions() {
         points++;
         points_div.innerText = "Points: " + points;
       }else{
-        console.log("obstacle");
         gameOver();
         
         //alert("Game Over");
@@ -606,15 +619,13 @@ function render() {
         visible_planets.push([planet, [tr.x_speed,tr.z_speed]]);
       }
     }, 25000*speed*25);  
+    if(vol_on && !sound.isPlaying) {
+      sound.play();
+    }
     replay = false;
   }
   if(loaded == 4+obstacles_frequency+points_frequency) {
-    if(vol_on) {
-      sound.setLoop(true);
-      sound.setVolume(0.5);
-      sound.play();
-    }
-
+    document.getElementById('loading').style.display = 'none';
     Animator.elbowRotation(1,11000);
     Animator.legRotation();
     loaded = 0;

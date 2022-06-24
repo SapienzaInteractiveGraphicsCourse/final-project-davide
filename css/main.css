@@ -34,6 +34,8 @@ body {
     background-color: white;
     margin: 0.5rem 0;
   }
+
+#loading,
 #game_over,
 #menu {
     position: absolute;
@@ -48,15 +50,26 @@ body {
     color: white;
 }
 
+#loading_gif {
+  position: absolute;
+  margin-top: 9rem;
+  height: 307px;
+  width: 307px;
+  background: url('../images/loading.svg') no-repeat;
+}
+
+#loading,
 #game_over {
   display: none;
 }
 
+#loading_column,
 #game_over_column,
 #menu_column {
     text-align: center;
 }
 
+#loading_title,
 #game_over_title,
 #menu_title {
     font-size: 7rem;
