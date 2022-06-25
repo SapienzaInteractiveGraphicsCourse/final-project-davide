@@ -54,10 +54,6 @@ var points = 0;
 var distance = 0;
 var idleRotation = 1;
 var idleCont = 0;
-var lightColor = 0x11ffEee;
-const material3 = new THREE.MeshPhongMaterial({ 
-  color: lightColor, 
-});
 var listener = new THREE.AudioListener();
 var sound = new THREE.Audio( listener );
 var vol_on = true;
@@ -129,7 +125,6 @@ function createScene(){
   
   const character_loader = new GLTFLoader();
 
-
   character_loader.load( 'models/robot/scene.gltf', function ( gltf ) {
     character = gltf.scene;
     character.scale.set(0.007,0.007,0.007);
@@ -171,18 +166,24 @@ class ObjectCreator {
   constructor() {}
 
   static createSurf(){
-    const geometry1 = new RoundedBoxGeometry( 1, 0.22, 0.6, 6, 2 );
-    const material1 = new THREE.MeshBasicMaterial({
-      color: 0xffffff,
+    const surf_geometry = new RoundedBoxGeometry( 1, 0.22, 0.6, 6, 2 );
+    const surf_material1 = new THREE.MeshBasicMaterial({
+      color: 0xfaa100,
       map: texloader.load('images/surf_tex.jpg'),
     });
-    const surf = new THREE.Mesh( geometry1, material1 );
-    const geometry2 = new THREE.CylinderBufferGeometry(0.08, 0.08, 0.16, 16);
-    const material2 = new THREE.MeshBasicMaterial({ 
-      color: 0xfaa100, 
+    const surf_material2 = new THREE.MeshBasicMaterial({
+      color: 0xfaa100,
+      map: texloader.load('images/surf_tex3.jpg'),
     });
-    const reactor1 = new THREE.Mesh(geometry2, material2);
-    const reactor2 = new THREE.Mesh(geometry2, material2);
+    const surf_materials = [ surf_material2,surf_material2,surf_material1,surf_material1, surf_material2,surf_material2];
+    const surf = new THREE.Mesh( surf_geometry, surf_materials);
+    const reactor_geometry = new THREE.CylinderBufferGeometry(0.08, 0.08, 0.16, 16);
+    const reactor_material = new THREE.MeshBasicMaterial({ 
+      color: 0xfaa100, 
+      map: texloader.load('images/surf_tex3.jpg'),
+    });
+    const reactor1 = new THREE.Mesh(reactor_geometry, reactor_material);
+    const reactor2 = new THREE.Mesh(reactor_geometry, reactor_material);
     surfGroup = new THREE.Group();
     surfGroup.position.y -= 25;
 
@@ -198,21 +199,23 @@ class ObjectCreator {
     reactor2.position.x += 0.5;
     reactor2.position.y -= 0.01;
     
-    
-    const geometry3 = new THREE.CylinderBufferGeometry(0.04, 0.05, 0.015, 16);
-    const reactorLight1 = new THREE.Mesh(geometry3, material3);
-    const reactorLight2 = new THREE.Mesh(geometry3, material3);
+    const reactor_light_material = new THREE.MeshPhongMaterial({ 
+      color: 0x11ffEee, 
+    });
+    const reactor_light_geometry = new THREE.CylinderBufferGeometry(0.04, 0.05, 0.015, 16);
+    const reactorLight1 = new THREE.Mesh(reactor_light_geometry, reactor_light_material);
+    const reactorLight2 = new THREE.Mesh(reactor_light_geometry, reactor_light_material);
 
     reactorLight1.rotation.x += Math.PI/2;
     reactorLight1.rotation.z += Math.PI/2;
     reactorLight1.position.z += 0.04+0.15;
-    reactorLight1.position.x += 0.58;
+    reactorLight1.position.x += 0.574;
     reactorLight1.position.y -= 0.01;
 
     reactorLight2.rotation.x += Math.PI/2;
     reactorLight2.rotation.z += Math.PI/2;
     reactorLight2.position.z += 0.04-0.15;
-    reactorLight2.position.x += 0.58;
+    reactorLight2.position.x += 0.574;
     reactorLight2.position.y -= 0.01;
 
     surfGroup.add(surf);
@@ -468,6 +471,16 @@ function setButtons(){
   document.getElementById('start_btn').onclick = () => {
     if(!replay){
       document.getElementById('loading').style.display = 'grid';
+    }else{
+      interval1 = setInterval(function () {speed += 0.001}, 11000);
+      interval2 = setInterval(function () {
+        var planet = pending_planets.pop();
+        if( planet != undefined){
+          var tr = trajectories[Math.floor(Math.random() * trajectories.length)]
+          planet.position.set(tr.point_x,tr.point_y,tr.point_z);
+          visible_planets.push([planet, [tr.x_speed,tr.z_speed]]);
+        }
+      }, 25000*speed*25);  
     }
     document.getElementById('menu').style.display = 'none';
     running = true;
@@ -615,6 +628,12 @@ L_elbow_020 : gomito sinistro
 
 function render() {
   if(replay || loaded == 4+obstacles_frequency+points_frequency){
+    if(vol_on && !sound.isPlaying) {
+      sound.play();
+    }
+    replay = false;
+  }
+  if(loaded == 4+obstacles_frequency+points_frequency) {
     interval1 = setInterval(function () {speed += 0.001}, 11000);
     interval2 = setInterval(function () {
       var planet = pending_planets.pop();
@@ -624,12 +643,6 @@ function render() {
         visible_planets.push([planet, [tr.x_speed,tr.z_speed]]);
       }
     }, 25000*speed*25);  
-    if(vol_on && !sound.isPlaying) {
-      sound.play();
-    }
-    replay = false;
-  }
-  if(loaded == 4+obstacles_frequency+points_frequency) {
     document.getElementById('loading').style.display = 'none';
     Animator.elbowRotation(1,11000);
     Animator.legRotation();
