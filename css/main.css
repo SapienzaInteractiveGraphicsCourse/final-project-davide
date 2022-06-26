@@ -35,6 +35,7 @@ body {
     margin: 0.5rem 0;
   }
 
+#htp,
 #loading,
 #game_over,
 #menu {
@@ -58,16 +59,29 @@ body {
   background: url('../images/loading.svg') no-repeat;
 }
 
+#htp,
 #loading,
 #game_over {
   display: none;
 }
 
+#htp_column,
 #loading_column,
 #game_over_column,
 #menu_column {
     text-align: center;
 }
+
+#htp_title { 
+  font-size: 5rem;
+  margin-bottom:8rem;
+}
+
+#htp_text{
+  font-size: 2rem;
+  margin-bottom: 7rem;
+}
+
 
 #loading_title,
 #game_over_title,

@@ -166,20 +166,21 @@ class ObjectCreator {
   constructor() {}
 
   static createSurf(){
+    const surf_color = 0xffd000;
     const surf_geometry = new RoundedBoxGeometry( 1, 0.22, 0.6, 6, 2 );
     const surf_material1 = new THREE.MeshBasicMaterial({
-      color: 0xfaa100,
+      color: surf_color,
       map: texloader.load('images/surf_tex.jpg'),
     });
     const surf_material2 = new THREE.MeshBasicMaterial({
-      color: 0xfaa100,
+      color: surf_color,
       map: texloader.load('images/surf_tex3.jpg'),
     });
     const surf_materials = [ surf_material2,surf_material2,surf_material1,surf_material1, surf_material2,surf_material2];
     const surf = new THREE.Mesh( surf_geometry, surf_materials);
     const reactor_geometry = new THREE.CylinderBufferGeometry(0.08, 0.08, 0.16, 16);
     const reactor_material = new THREE.MeshBasicMaterial({ 
-      color: 0xfaa100, 
+      color: surf_color, 
       map: texloader.load('images/surf_tex3.jpg'),
     });
     const reactor1 = new THREE.Mesh(reactor_geometry, reactor_material);
@@ -341,8 +342,7 @@ class Animator {
     jumpUp.start();
 
   }
-  //[mod_y + 0.3, mod_y + 0.6, mod_y + 0.9, mod_y +1.2, mod_y+1.5]
-  //[mod_y+1.5, mod_y +1.2, mod_y + 0.9, mod_y + 0.6, mod_y + 0.3, mod_y]
+
   static jumpLeft(object, rotate){
     isJumping = true;
     var mod_y = object.position.y; 
@@ -464,6 +464,7 @@ function setButtons(){
   
   document.getElementById('replay_btn').onclick = () => {
     gameOver_div.style.display = 'none';
+    spawnPlanets();
     running = true;
     resetGame();
   };  
@@ -472,15 +473,7 @@ function setButtons(){
     if(!replay){
       document.getElementById('loading').style.display = 'grid';
     }else{
-      interval1 = setInterval(function () {speed += 0.001}, 11000);
-      interval2 = setInterval(function () {
-        var planet = pending_planets.pop();
-        if( planet != undefined){
-          var tr = trajectories[Math.floor(Math.random() * trajectories.length)]
-          planet.position.set(tr.point_x,tr.point_y,tr.point_z);
-          visible_planets.push([planet, [tr.x_speed,tr.z_speed]]);
-        }
-      }, 25000*speed*25);  
+      spawnPlanets();
     }
     document.getElementById('menu').style.display = 'none';
     running = true;
@@ -491,6 +484,29 @@ function setButtons(){
     document.getElementById('game_over').style.display = 'none';
     document.getElementById('menu').style.display = 'grid';
   };
+
+  document.getElementById('htp_btn').onclick = () => {
+    document.getElementById('menu').style.display = 'none';
+    document.getElementById('htp').style.display = 'grid';
+  };
+
+  document.getElementById('htp_menu_btn').onclick = () => {
+    document.getElementById('htp').style.display = 'none';
+    document.getElementById('menu').style.display = 'grid';
+  };
+
+}
+
+function spawnPlanets(){
+  interval1 = setInterval(function () {speed += 0.001}, 11000);
+  interval2 = setInterval(function () {
+    var planet = pending_planets.pop();
+    if( planet != undefined){
+      var tr = trajectories[Math.floor(Math.random() * trajectories.length)]
+      planet.position.set(tr.point_x,tr.point_y,tr.point_z);
+      visible_planets.push([planet, [tr.x_speed,tr.z_speed]]);
+    }
+  }, 25000*speed*25);  
 }
 
 
@@ -549,8 +565,6 @@ function checkCollisions() {
         points_div.innerText = "Points: " + points;
       }else{
         gameOver();
-        
-        //alert("Game Over");
       }
     }
   }
@@ -606,25 +620,7 @@ function updateScore(){
 }
 
 
-/*
-Joint_2_2_033 : braccio destro
-R_arm_035 : braccio destro
-L_arm_019 : braccio sinistro
-Joint_3_018 : braccio sinistro
-Joint_2_017 : braccio sinistro ma angolo diverso
-Joint_1_016 : braccio sinistro un pò più giù
-spine_013 : vita
-R_ankle1_09 : ginocchio basso destro
-R_knee_08 : ginocchio alto
-R_leg_07 : gamba destra
-L_leg_01 : gamba sinistra
-R_ankle_010 : caviglia destra
-hips_00
-R_shoulder_031 : spalla destra
-R_elbow_036 : gomito destro
-L_elbow_020 : gomito sinistro
 
-*/
 
 function render() {
   if(replay || loaded == 4+obstacles_frequency+points_frequency){
@@ -634,15 +630,7 @@ function render() {
     replay = false;
   }
   if(loaded == 4+obstacles_frequency+points_frequency) {
-    interval1 = setInterval(function () {speed += 0.001}, 11000);
-    interval2 = setInterval(function () {
-      var planet = pending_planets.pop();
-      if( planet != undefined){
-        var tr = trajectories[Math.floor(Math.random() * trajectories.length)]
-        planet.position.set(tr.point_x,tr.point_y,tr.point_z);
-        visible_planets.push([planet, [tr.x_speed,tr.z_speed]]);
-      }
-    }, 25000*speed*25);  
+    spawnPlanets();
     document.getElementById('loading').style.display = 'none';
     Animator.elbowRotation(1,11000);
     Animator.legRotation();
@@ -650,8 +638,6 @@ function render() {
   }
   checkCollisions();
   Animator.idleAnimation();
-  //character.rotation.y += 0.003; 
-  //character.getObjectByName("R_elbow_036").rotation.y += 0.003;
   objectsParent.position.z += speed*10;
   updatePlanets();
   surfBox.setFromObject(surf);
