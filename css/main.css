@@ -23,6 +23,7 @@ body {
     padding: 0.5rem;
     font-family: 'SFDistantGalaxy';
     margin-left: 0.5rem;
+    background-color: black;
 }
 
 #score #title{

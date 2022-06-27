@@ -77,7 +77,7 @@ function createScene(){
   audioLoader.load( 'sounds/the_blue_danube.mp3', function( buffer ) {
     sound.setBuffer( buffer );
     sound.setLoop(true);
-    sound.setVolume(0.6);
+    sound.setVolume(0.75);
     loaded++;
   },
               function ( x ) {},
@@ -116,6 +116,7 @@ function createScene(){
   visible_planets.push([imageLoader("images/planet5.png",-15.1,-4,-90,[4,4,4]),[-0.01,0.3]]);
   visible_planets.push([imageLoader("images/planet3.png",12,20,-90,[4,4,4]),[0.01,0.3]]);
 
+  pending_planets.push(imageLoader("images/planet1.png",0,0,10,[4,4,4]));
   pending_planets.push(imageLoader("images/planet6.png",0,0,10,[4,4,4]));
   pending_planets.push(imageLoader("images/planet7.png",0,0,10,[4,4,4]));
   pending_planets.push(imageLoader("images/space_station.png",0,0,10,[4,4,4]));
@@ -127,7 +128,7 @@ function createScene(){
 
   character_loader.load( 'models/robot/scene.gltf', function ( gltf ) {
     character = gltf.scene;
-    character.scale.set(0.007,0.007,0.007);
+    character.scale.set(0.0055,0.0055,0.0055);
     character.add(surfGroup);
     scene.add(character);
     surfGroup.scale.set(350,350,350);
@@ -167,41 +168,53 @@ class ObjectCreator {
 
   static createSurf(){
     const surf_color = 0xffd000;
-    const surf_geometry = new RoundedBoxGeometry( 1, 0.22, 0.6, 6, 2 );
+    const surf_geometry = new RoundedBoxGeometry( 1, 0.15, 0.6, 6, 2 );
     const surf_material1 = new THREE.MeshBasicMaterial({
-      color: surf_color,
-      map: texloader.load('images/surf_tex.jpg'),
+      color: 0xa6a6a6,
+      map: texloader.load('images/surf_tex2.jpg'),
     });
     const surf_material2 = new THREE.MeshBasicMaterial({
-      color: surf_color,
-      map: texloader.load('images/surf_tex3.jpg'),
+      color: 0xa6a6a6,
+      map: texloader.load('images/surf_tex4.jpg'),
     });
     const surf_materials = [ surf_material2,surf_material2,surf_material1,surf_material1, surf_material2,surf_material2];
     const surf = new THREE.Mesh( surf_geometry, surf_materials);
-    const reactor_geometry = new THREE.CylinderBufferGeometry(0.08, 0.08, 0.16, 16);
+    const reactor_geometry = new THREE.CylinderBufferGeometry(0.065, 0.065, 0.1, 16);
     const reactor_material = new THREE.MeshBasicMaterial({ 
-      color: surf_color, 
-      map: texloader.load('images/surf_tex3.jpg'),
+      color: 0xa6a6a6, 
+      map: texloader.load('images/surf_tex4.jpg'),
     });
     const reactor1 = new THREE.Mesh(reactor_geometry, reactor_material);
     const reactor2 = new THREE.Mesh(reactor_geometry, reactor_material);
     surfGroup = new THREE.Group();
-    surfGroup.position.y -= 25;
+    surfGroup.position.y -= 5;
 
     reactor1.rotation.x += Math.PI/2;
     reactor1.rotation.z += Math.PI/2;
     reactor1.position.z += 0.04+0.15;
-    reactor1.position.x += 0.5;
-    reactor1.position.y -= 0.01;
+    reactor1.position.x += 0.54;
+    reactor1.position.y -= 0.03;
 
     reactor2.rotation.x += Math.PI/2;
     reactor2.rotation.z += Math.PI/2;
     reactor2.position.z += 0.04-0.15;
-    reactor2.position.x += 0.5;
-    reactor2.position.y -= 0.01;
+    reactor2.position.x += 0.54;
+    reactor2.position.y -= 0.03;
+
+    var fireVideo = document.createElement("video");
+    fireVideo.src = 'images/fire.mp4';
+    fireVideo.loop = true;
+    fireVideo.play();
+
+    var fireTexture = new THREE.VideoTexture(fireVideo);
+    fireTexture.format = THREE.RGBAFormat;
+    fireTexture.minFilter = THREE.NearestFilter;
+    fireTexture.maxFilter = THREE.NearestFilter;
+    fireTexture.generateMipmaps = false;
     
     const reactor_light_material = new THREE.MeshPhongMaterial({ 
       color: 0x11ffEee, 
+      map: fireTexture,//texloader.load('images/fire.gif'),
     });
     const reactor_light_geometry = new THREE.CylinderBufferGeometry(0.04, 0.05, 0.015, 16);
     const reactorLight1 = new THREE.Mesh(reactor_light_geometry, reactor_light_material);
@@ -210,14 +223,14 @@ class ObjectCreator {
     reactorLight1.rotation.x += Math.PI/2;
     reactorLight1.rotation.z += Math.PI/2;
     reactorLight1.position.z += 0.04+0.15;
-    reactorLight1.position.x += 0.574;
-    reactorLight1.position.y -= 0.01;
+    reactorLight1.position.x += 0.584;
+    reactorLight1.position.y -= 0.03;
 
     reactorLight2.rotation.x += Math.PI/2;
     reactorLight2.rotation.z += Math.PI/2;
     reactorLight2.position.z += 0.04-0.15;
-    reactorLight2.position.x += 0.574;
-    reactorLight2.position.y -= 0.01;
+    reactorLight2.position.x += 0.584;
+    reactorLight2.position.y -= 0.03;
 
     surfGroup.add(surf);
     surfGroup.add(reactor1);
@@ -226,7 +239,7 @@ class ObjectCreator {
     surfGroup.add(reactorLight2);
     scene.add( surfGroup );
     surf.position.y -= 0.04;
-    surfGroup.position.x -= 10;
+    surfGroup.position.x -= 50;
     surf.position.z += 0.04;
     loaded++;
     return surf;
@@ -446,6 +459,21 @@ function resetGame() {
     child.position.z = -objectsParent.position.z-85-Math.floor(Math.random() * 160);
     objectsBoxes[i].setFromObject(child);
   }
+
+  var l = visible_planets.length;
+  for( var i = 0; i < l; i++){
+    var planet = visible_planets.pop();
+    planet[0].position.set(0,0,10);
+    pending_planets.push(planet[0]);
+  }
+  var arr = [[10,2,-20],[-13,2,-15],[12,20,-90],[-15.1,-4,-90]];
+  for( var i = 0; i < 4; i++){
+    var planet = pending_planets.pop();
+    planet.position.set(arr[i][0],arr[i][1],arr[i][2]);
+    planet.scale.set(4,4,4);
+    if(i%2 == 0) visible_planets.push([planet, [-0.01,0.3]]);
+    else visible_planets.push([planet, [0.01,0.3]]);
+  }
 }
 
 function setButtons(){
@@ -465,8 +493,8 @@ function setButtons(){
   document.getElementById('replay_btn').onclick = () => {
     gameOver_div.style.display = 'none';
     spawnPlanets();
-    running = true;
     resetGame();
+    running = true;
   };  
 
   document.getElementById('start_btn').onclick = () => {
@@ -599,7 +627,8 @@ function updatePlanets(){
   for(var i = 0; i < visible_planets.length; i++){
     var planet = visible_planets[i][0];
     var x_s = visible_planets[i][1][0]; 
-    var z_s = visible_planets[i][1][1]; 
+    var z_s = visible_planets[i][1][1];
+
     planet.position.x += x_s*speed;
     planet.position.z += z_s*speed;
     planet.scale.x += (speed/24);
