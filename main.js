@@ -34,12 +34,12 @@ const trajectories = [
   {point_x : -12, point_y : 4, point_z : -100, x_speed : -0.01, z_speed : 0.3},
   {point_x : -13, point_y : 8, point_z : -100, x_speed : -0.01, z_speed : 0.3},
   {point_x : 13, point_y : 16, point_z : -100, x_speed : 0.01, z_speed : 0.3},
-  {point_x : 13, point_y : -3, point_z : -100, x_speed : 0.01, z_speed : 0.3},
-  {point_x : -15.1, point_y : -4, point_z : -100, x_speed : -0.01, z_speed : 0.3},
+  {point_x : 13.1, point_y : -3, point_z : -100, x_speed : 0.01, z_speed : 0.3},
+  {point_x : -15.25, point_y : -4, point_z : -100, x_speed : -0.01, z_speed : 0.3},
   {point_x : -15, point_y : 22, point_z : -100, x_speed : -0.01, z_speed : 0.3},
   {point_x : 10, point_y : 25, point_z : -100, x_speed : 0.01, z_speed : 0.3},
   {point_x : -10.1, point_y : 18, point_z : -100, x_speed : -0.01, z_speed : 0.3},
-  {point_x : 15.1, point_y : -4, point_z : -100, x_speed : 0.01, z_speed : 0.3}
+  {point_x : 15.25, point_y : -4, point_z : -100, x_speed : 0.01, z_speed : 0.3}
 ] 
 var total_score_div = document.getElementById('total_score');
 var distance_div = document.getElementById('distance');
@@ -54,10 +54,13 @@ var points = 0;
 var distance = 0;
 var idleRotation = 1;
 var idleCont = 0;
+var cubeMovement = 1;
+var cubeCont = 0;
 var listener = new THREE.AudioListener();
 var sound = new THREE.Audio( listener );
 var vol_on = true;
 var loaded = 0;
+var planet_spawn_rate = 25000;
 
 
 setButtons();
@@ -136,6 +139,8 @@ function createScene(){
     character.rotation.y += Math.PI/2;
     character.getObjectByName("L_leg_01").rotation.x += Math.PI/25;
     character.getObjectByName("spine_013").rotation.z += Math.PI/4;
+    character.getObjectByName("L_knee_02").rotation.x -= Math.PI*0.1;
+    character.getObjectByName("L_ankle1_03").rotation.x += Math.PI*0.1;
     character.position.x += 0.102;
     character.position.y += 1;
     surfBox = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3()).setFromObject(surf);
@@ -167,21 +172,21 @@ class ObjectCreator {
   constructor() {}
 
   static createSurf(){
-    const surf_color = 0xffd000;
+    const surf_color = 0xa6a6a6;
     const surf_geometry = new RoundedBoxGeometry( 1, 0.15, 0.6, 6, 2 );
     const surf_material1 = new THREE.MeshBasicMaterial({
-      color: 0xa6a6a6,
+      color: surf_color,
       map: texloader.load('images/surf_tex2.jpg'),
     });
     const surf_material2 = new THREE.MeshBasicMaterial({
-      color: 0xa6a6a6,
+      color: surf_color,
       map: texloader.load('images/surf_tex4.jpg'),
     });
     const surf_materials = [ surf_material2,surf_material2,surf_material1,surf_material1, surf_material2,surf_material2];
     const surf = new THREE.Mesh( surf_geometry, surf_materials);
     const reactor_geometry = new THREE.CylinderBufferGeometry(0.065, 0.065, 0.1, 16);
     const reactor_material = new THREE.MeshBasicMaterial({ 
-      color: 0xa6a6a6, 
+      color: surf_color, 
       map: texloader.load('images/surf_tex4.jpg'),
     });
     const reactor1 = new THREE.Mesh(reactor_geometry, reactor_material);
@@ -204,6 +209,7 @@ class ObjectCreator {
     var fireVideo = document.createElement("video");
     fireVideo.src = 'images/fire.mp4';
     fireVideo.loop = true;
+    fireVideo.defaultMuted = true;
     fireVideo.play();
 
     var fireTexture = new THREE.VideoTexture(fireVideo);
@@ -274,6 +280,7 @@ class ObjectCreator {
     point.position.x -= lanes[Math.floor(Math.random() * 3)];
     point.position.z = -85-Math.floor(Math.random() * 150);
     const pointBox = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3()).setFromObject(point);
+    point.userData = { type: 'p' };
     pointBox.userData = { type: 'p' };
     objectsBoxes.push(pointBox);
     loaded++;
@@ -294,13 +301,13 @@ class ObjectCreator {
       color: 0xffffff,
       map: tex,
     });
-    const point = new THREE.Mesh( geometry, material );
-    objectsParent.add(point);
-    point.scale.set(2, h, 0.5);
-    point.position.y += h*0.38;
-    point.position.x -= lanes[Math.floor(Math.random() * 3)];
-    point.position.z = -85-Math.floor(Math.random() * 150);
-    const obstacleBox = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3()).setFromObject(point);
+    const obstacle = new THREE.Mesh( geometry, material );
+    objectsParent.add(obstacle);
+    obstacle.scale.set(2, h, 0.5);
+    obstacle.position.y += h*0.38;
+    obstacle.position.x -= lanes[Math.floor(Math.random() * 3)];
+    obstacle.position.z = -85-Math.floor(Math.random() * 150);
+    const obstacleBox = new THREE.Box3(new THREE.Vector3(), new THREE.Vector3()).setFromObject(obstacle);
     obstacleBox.userData = { type: 'o' };
     objectsBoxes.push(obstacleBox);
     loaded++;
@@ -320,6 +327,12 @@ class Animator {
   static jumpUp(object, rotate){
     var rArm = character.getObjectByName("R_arm_035").rotation;
     var lArm = character.getObjectByName("L_arm_019").rotation;
+    var rElbow = character.getObjectByName("R_elbow_036").rotation; 
+    var lElbow = character.getObjectByName("L_elbow_020").rotation; 
+    var rAnkle = character.getObjectByName("R_ankle1_09").rotation;
+    var lAnkle = character.getObjectByName("L_ankle1_03").rotation; 
+    var rKnee = character.getObjectByName("R_knee_08").rotation; 
+    var lKnee = character.getObjectByName("L_knee_02").rotation; 
     isJumping = true;
     var rot_x = object.rotation.x;
     var rotUp = new TWEEN.Tween(object.rotation).to({ x: rot_x+Math.PI*0.13 }, 470/speed/25);
@@ -332,19 +345,63 @@ class Animator {
       var roll = new TWEEN.Tween(object.rotation).to({ y: rot_y+Math.PI*2  }, 750/speed/25);
       roll.start();
     }else{
-      rot_x = rArm.x;
-      var rotrArmUp = new TWEEN.Tween(rArm).to({ x: rot_x-Math.PI*0.3 }, 460/speed/25);
+      rot_x = rArm.x; //right
+      var rotrArmUp = new TWEEN.Tween(rArm).to({ x: rot_x-Math.PI*0.25 }, 460/speed/25);
       var rotrArmDown = new TWEEN.Tween(rArm).to({ x: rot_x}, 460/speed/25);
       rotrArmUp.chain(rotrArmDown);
       rotrArmUp.easing(TWEEN.Easing.Cubic.Out);
       rotrArmUp.start();
-      rot_x = lArm.x;
-      var rotlArmUp = new TWEEN.Tween(lArm).to({ x: rot_x+Math.PI*0.3 }, 460/speed/25);
+      rot_x = rElbow.x;
+      var rotrElbowUp = new TWEEN.Tween(rElbow).to({ x: rot_x-Math.PI*0.3 }, 460/speed/25);
+      var rotrElbowDown = new TWEEN.Tween(rElbow).to({ x: rot_x}, 460/speed/25);
+      rotrElbowUp.chain(rotrElbowDown);
+      rotrElbowUp.easing(TWEEN.Easing.Cubic.Out);
+      rotrElbowUp.start();
+      rot_x = rKnee.x;
+      var rotrKneeUp = new TWEEN.Tween(rKnee).to({ x: rot_x-Math.PI*0.2 }, 460/speed/25);
+      var rotrKneeDown = new TWEEN.Tween(rKnee).to({ x: rot_x}, 460/speed/25);
+      rotrKneeUp.chain(rotrKneeDown);
+      rotrKneeUp.easing(TWEEN.Easing.Cubic.Out);
+      rotrKneeUp.start();
+      rot_x = rAnkle.x;
+      var rotrAnkleUp = new TWEEN.Tween(rAnkle).to({ x: rot_x+Math.PI*0.2 }, 460/speed/25);
+      var rotrAnkleDown = new TWEEN.Tween(rAnkle).to({ x: rot_x}, 460/speed/25);
+      rotrAnkleUp.chain(rotrAnkleDown);
+      rotrAnkleUp.easing(TWEEN.Easing.Cubic.Out);
+      rotrAnkleUp.start();
+
+      rot_x = lArm.x; //left
+      var rotlArmUp = new TWEEN.Tween(lArm).to({ x: rot_x+Math.PI*0.25 }, 460/speed/25);
       var rotlArmDown = new TWEEN.Tween(lArm).to({ x: rot_x}, 460/speed/25);
       rotlArmUp.chain(rotlArmDown);
       rotlArmUp.easing(TWEEN.Easing.Cubic.Out);
       rotlArmUp.start();
+      rot_x = lElbow.x;
+      var rotlElbowUp = new TWEEN.Tween(lElbow).to({ x: rot_x+Math.PI*0.3 }, 460/speed/25);
+      var rotlElbowDown = new TWEEN.Tween(lElbow).to({ x: rot_x}, 460/speed/25);
+      rotlElbowUp.chain(rotlElbowDown);
+      rotlElbowUp.easing(TWEEN.Easing.Cubic.Out);
+      rotlElbowUp.start();
+      rot_x = lKnee.x;
+      var rotlKneeUp = new TWEEN.Tween(lKnee).to({ x: rot_x-Math.PI*0.18  }, 460/speed/25);
+      var rotlKneeDown = new TWEEN.Tween(lKnee).to({ x: rot_x}, 460/speed/25);
+      rotlKneeUp.chain(rotlKneeDown);
+      rotlKneeUp.easing(TWEEN.Easing.Cubic.Out);
+      rotlKneeUp.start();
+      rot_x = lAnkle.x;
+      var rotlAnkleUp = new TWEEN.Tween(lAnkle).to({ x: rot_x+Math.PI*0.18  }, 460/speed/25);
+      var rotlAnkleDown = new TWEEN.Tween(lAnkle).to({ x: rot_x}, 460/speed/25);
+      rotlAnkleUp.chain(rotlAnkleDown);
+      rotlAnkleUp.easing(TWEEN.Easing.Cubic.Out);
+      rotlAnkleUp.start();
     }
+    var mod_y = surfGroup.position.y; 
+    var surfUp = new TWEEN.Tween(surfGroup.position).to({y : mod_y+45}, 470/speed/25);
+    var surfDown = new TWEEN.Tween(surfGroup.position).to({y : mod_y}, 470/speed/25);
+    surfUp.chain(surfDown);
+    surfUp.easing(TWEEN.Easing.Cubic.Out);
+    surfUp.start();
+
     var mod_y = object.position.y; 
     var jumpUp = new TWEEN.Tween(object.position).to({y : mod_y+2.8}, 470/speed/25);
     var jumpDown = new TWEEN.Tween(object.position).to({y : mod_y}, 470/speed/25).onComplete(function () {
@@ -371,7 +428,7 @@ class Animator {
       roll.start();
     }
     var mod_x = object.position.x; 
-    var jumpLeftXUp = new TWEEN.Tween(object.position).to({x: mod_x-3.8}, 840/speed/25).onComplete(function () {
+    var jumpLeftXUp = new TWEEN.Tween(object.position).to({x: mod_x-3.7}, 840/speed/25).onComplete(function () {
       isJumping = false;
     });
     jumpLeftXUp.start();
@@ -393,7 +450,7 @@ class Animator {
       roll.start();
     }
     var mod_x = object.position.x; 
-    var jumpLeftXUp = new TWEEN.Tween(object.position).to({x: mod_x+3.8}, 840/speed/25).onComplete(function () {
+    var jumpLeftXUp = new TWEEN.Tween(object.position).to({x: mod_x+3.7}, 840/speed/25).onComplete(function () {
       isJumping = false;
     });
     jumpLeftXUp.start();
@@ -433,6 +490,12 @@ class Animator {
     rotArmUp.chain(rotArmDown);
     rotArmDown.chain(rotArmUp);
     rotArmUp.start();
+  }
+  
+  static cubesMovement(obj){
+    cubeCont += cubeMovement;
+    if(cubeCont == 530 || cubeCont == -1) cubeMovement = -cubeMovement;
+    obj.position.y += 0.015*cubeMovement;
   }
 
 }
@@ -528,13 +591,14 @@ function setButtons(){
 function spawnPlanets(){
   interval1 = setInterval(function () {speed += 0.001}, 11000);
   interval2 = setInterval(function () {
-    var planet = pending_planets.pop();
+    var rand = Math.floor(Math.random() * pending_planets.length);
+    var planet = pending_planets.splice(rand,1)[0];
     if( planet != undefined){
       var tr = trajectories[Math.floor(Math.random() * trajectories.length)]
       planet.position.set(tr.point_x,tr.point_y,tr.point_z);
       visible_planets.push([planet, [tr.x_speed,tr.z_speed]]);
     }
-  }, 25000*speed*25);  
+  }, planet_spawn_rate*speed*25);  
 }
 
 
@@ -612,6 +676,10 @@ function updateObjectsPosition(){
   var i = 0;
   objectsParent.traverse((child) => {
     if (child.type == "Mesh") {
+      
+      if (child.userData.type == "p"){
+        Animator.cubesMovement(child);
+      }
       objectsBoxes[i].setFromObject(child);
       i++;
       const z_pos = child.position.z + objectsParent.position.z;
@@ -649,8 +717,6 @@ function updateScore(){
 }
 
 
-
-
 function render() {
   if(replay || loaded == 4+obstacles_frequency+points_frequency){
     if(vol_on && !sound.isPlaying) {
@@ -665,15 +731,18 @@ function render() {
     Animator.legRotation();
     loaded = 0;
   }
-  checkCollisions();
-  Animator.idleAnimation();
-  objectsParent.position.z += speed*10;
-  updatePlanets();
-  surfBox.setFromObject(surf);
-  updateObjectsPosition();
-  updateScore();
-  
-  lanes_tex.offset.x = (lanes_tex.offset.x+speed*2.5)%4 - 2;
-  renderer.render(scene, camera);
+  //character.getObjectByName("L_ankle1_03").rotation.y += 0.1;
+  if(loaded == 0){
+    checkCollisions();
+    Animator.idleAnimation();
+    objectsParent.position.z += speed*10;
+    updatePlanets();
+    surfBox.setFromObject(surf);
+    updateObjectsPosition();
+    updateScore();
+    lanes_tex.offset.x = (lanes_tex.offset.x+speed*2.5)%4 - 2;
+    renderer.render(scene, camera);
+  }
+
 }
 
