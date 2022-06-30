@@ -218,31 +218,31 @@ class ObjectCreator {
     fireTexture.maxFilter = THREE.NearestFilter;
     fireTexture.generateMipmaps = false;
     
-    const reactor_light_material = new THREE.MeshPhongMaterial({ 
+    const reactor_fire_material = new THREE.MeshPhongMaterial({ 
       color: 0x11ffEee, 
-      map: fireTexture,//texloader.load('images/fire.gif'),
+      map: fireTexture,
     });
-    const reactor_light_geometry = new THREE.CylinderBufferGeometry(0.04, 0.05, 0.015, 16);
-    const reactorLight1 = new THREE.Mesh(reactor_light_geometry, reactor_light_material);
-    const reactorLight2 = new THREE.Mesh(reactor_light_geometry, reactor_light_material);
+    const reactor_fire_geometry = new THREE.CylinderBufferGeometry(0.04, 0.05, 0.015, 16);
+    const reactorFire1 = new THREE.Mesh(reactor_fire_geometry, reactor_fire_material);
+    const reactorFire2 = new THREE.Mesh(reactor_fire_geometry, reactor_fire_material);
 
-    reactorLight1.rotation.x += Math.PI/2;
-    reactorLight1.rotation.z += Math.PI/2;
-    reactorLight1.position.z += 0.04+0.15;
-    reactorLight1.position.x += 0.584;
-    reactorLight1.position.y -= 0.03;
+    reactorFire1.rotation.x += Math.PI/2;
+    reactorFire1.rotation.z += Math.PI/2;
+    reactorFire1.position.z += 0.04+0.15;
+    reactorFire1.position.x += 0.584;
+    reactorFire1.position.y -= 0.03;
 
-    reactorLight2.rotation.x += Math.PI/2;
-    reactorLight2.rotation.z += Math.PI/2;
-    reactorLight2.position.z += 0.04-0.15;
-    reactorLight2.position.x += 0.584;
-    reactorLight2.position.y -= 0.03;
+    reactorFire2.rotation.x += Math.PI/2;
+    reactorFire2.rotation.z += Math.PI/2;
+    reactorFire2.position.z += 0.04-0.15;
+    reactorFire2.position.x += 0.584;
+    reactorFire2.position.y -= 0.03;
 
     surfGroup.add(surf);
     surfGroup.add(reactor1);
     surfGroup.add(reactor2);
-    surfGroup.add(reactorLight1);
-    surfGroup.add(reactorLight2);
+    surfGroup.add(reactorFire1);
+    surfGroup.add(reactorFire2);
     scene.add( surfGroup );
     surf.position.y -= 0.04;
     surfGroup.position.x -= 50;
@@ -250,7 +250,6 @@ class ObjectCreator {
     loaded++;
     return surf;
   }
-
 
   static createLane(x){
     const geometry = new THREE.BoxBufferGeometry( 2, 0.1, 120 );
@@ -346,13 +345,13 @@ class Animator {
       roll.start();
     }else{
       rot_x = rArm.x; //right
-      var rotrArmUp = new TWEEN.Tween(rArm).to({ x: rot_x-Math.PI*0.25 }, 460/speed/25);
+      var rotrArmUp = new TWEEN.Tween(rArm).to({ x: rot_x-Math.PI*0.26 }, 460/speed/25);
       var rotrArmDown = new TWEEN.Tween(rArm).to({ x: rot_x}, 460/speed/25);
       rotrArmUp.chain(rotrArmDown);
       rotrArmUp.easing(TWEEN.Easing.Cubic.Out);
       rotrArmUp.start();
       rot_x = rElbow.x;
-      var rotrElbowUp = new TWEEN.Tween(rElbow).to({ x: rot_x-Math.PI*0.3 }, 460/speed/25);
+      var rotrElbowUp = new TWEEN.Tween(rElbow).to({ x: rot_x-Math.PI*0.2 }, 460/speed/25);
       var rotrElbowDown = new TWEEN.Tween(rElbow).to({ x: rot_x}, 460/speed/25);
       rotrElbowUp.chain(rotrElbowDown);
       rotrElbowUp.easing(TWEEN.Easing.Cubic.Out);
@@ -371,37 +370,38 @@ class Animator {
       rotrAnkleUp.start();
 
       rot_x = lArm.x; //left
-      var rotlArmUp = new TWEEN.Tween(lArm).to({ x: rot_x+Math.PI*0.25 }, 460/speed/25);
+      var rotlArmUp = new TWEEN.Tween(lArm).to({ x: rot_x+Math.PI*0.26 }, 460/speed/25);
       var rotlArmDown = new TWEEN.Tween(lArm).to({ x: rot_x}, 460/speed/25);
       rotlArmUp.chain(rotlArmDown);
       rotlArmUp.easing(TWEEN.Easing.Cubic.Out);
       rotlArmUp.start();
       rot_x = lElbow.x;
-      var rotlElbowUp = new TWEEN.Tween(lElbow).to({ x: rot_x+Math.PI*0.3 }, 460/speed/25);
+      var rotlElbowUp = new TWEEN.Tween(lElbow).to({ x: rot_x+Math.PI*0.2 }, 460/speed/25);
       var rotlElbowDown = new TWEEN.Tween(lElbow).to({ x: rot_x}, 460/speed/25);
       rotlElbowUp.chain(rotlElbowDown);
       rotlElbowUp.easing(TWEEN.Easing.Cubic.Out);
       rotlElbowUp.start();
       rot_x = lKnee.x;
-      var rotlKneeUp = new TWEEN.Tween(lKnee).to({ x: rot_x-Math.PI*0.18  }, 460/speed/25);
+      var rotlKneeUp = new TWEEN.Tween(lKnee).to({ x: rot_x-Math.PI*0.25  }, 460/speed/25);
       var rotlKneeDown = new TWEEN.Tween(lKnee).to({ x: rot_x}, 460/speed/25);
       rotlKneeUp.chain(rotlKneeDown);
       rotlKneeUp.easing(TWEEN.Easing.Cubic.Out);
       rotlKneeUp.start();
       rot_x = lAnkle.x;
-      var rotlAnkleUp = new TWEEN.Tween(lAnkle).to({ x: rot_x+Math.PI*0.18  }, 460/speed/25);
+      var rotlAnkleUp = new TWEEN.Tween(lAnkle).to({ x: rot_x+Math.PI*0.25  }, 460/speed/25);
       var rotlAnkleDown = new TWEEN.Tween(lAnkle).to({ x: rot_x}, 460/speed/25);
       rotlAnkleUp.chain(rotlAnkleDown);
       rotlAnkleUp.easing(TWEEN.Easing.Cubic.Out);
       rotlAnkleUp.start();
+      
+      var mod_y = surfGroup.position.y; 
+      var surfUp = new TWEEN.Tween(surfGroup.position).to({y : mod_y+55}, 470/speed/25);
+      var surfDown = new TWEEN.Tween(surfGroup.position).to({y : mod_y}, 470/speed/25);
+      surfUp.chain(surfDown);
+      surfUp.easing(TWEEN.Easing.Cubic.Out);
+      surfUp.start();
     }
-    var mod_y = surfGroup.position.y; 
-    var surfUp = new TWEEN.Tween(surfGroup.position).to({y : mod_y+45}, 470/speed/25);
-    var surfDown = new TWEEN.Tween(surfGroup.position).to({y : mod_y}, 470/speed/25);
-    surfUp.chain(surfDown);
-    surfUp.easing(TWEEN.Easing.Cubic.Out);
-    surfUp.start();
-
+    
     var mod_y = object.position.y; 
     var jumpUp = new TWEEN.Tween(object.position).to({y : mod_y+2.8}, 470/speed/25);
     var jumpDown = new TWEEN.Tween(object.position).to({y : mod_y}, 470/speed/25).onComplete(function () {
@@ -414,6 +414,7 @@ class Animator {
   }
 
   static jumpLeft(object, rotate){
+    var spine = character.getObjectByName("spine_013").rotation;
     isJumping = true;
     var mod_y = object.position.y; 
     var jumpLeftYUp = new TWEEN.Tween(object.position).to({y: mod_y+1.5}, 420/speed/25);
@@ -426,6 +427,14 @@ class Animator {
       var rot_y = object.rotation.y;
       var roll = new TWEEN.Tween(object.rotation).to({ y: rot_y+Math.PI*2  }, 560/speed/25);
       roll.start();
+    }else{
+      var rot_x = spine.x; 
+      var rotLeft = new TWEEN.Tween(spine).to({x: rot_x+Math.PI*0.09}, 400/speed/25);
+      rotLeft.easing(TWEEN.Easing.Quadratic.Out);
+      var rotRight = new TWEEN.Tween(spine).to({x: rot_x}, 400/speed/25);
+      rotRight.easing(TWEEN.Easing.Quadratic.In);
+      rotLeft.chain(rotRight);
+      rotLeft.start();
     }
     var mod_x = object.position.x; 
     var jumpLeftXUp = new TWEEN.Tween(object.position).to({x: mod_x-3.7}, 840/speed/25).onComplete(function () {
@@ -435,6 +444,7 @@ class Animator {
   }
 
   static jumpRight(object, rotate){
+    var spine = character.getObjectByName("spine_013").rotation;
     isJumping = true;
     var mod_y = object.position.y; 
     var jumpRightYUp = new TWEEN.Tween(object.position).to({y: mod_y+1.5}, 420/speed/25);
@@ -443,11 +453,18 @@ class Animator {
     jumpRightYDown.easing(TWEEN.Easing.Quadratic.In);
     jumpRightYUp.chain(jumpRightYDown);
     jumpRightYUp.start();
-
     if(rotate){
       var rot_y = object.rotation.y;
       var roll = new TWEEN.Tween(object.rotation).to({ y: rot_y-Math.PI*2  }, 560/speed/25);
       roll.start();
+    }else{
+      var rot_x = spine.x; 
+      var rotLeft = new TWEEN.Tween(spine).to({x: rot_x-Math.PI*0.09}, 400/speed/25);
+      rotLeft.easing(TWEEN.Easing.Quadratic.Out);
+      var rotRight = new TWEEN.Tween(spine).to({x: rot_x}, 400/speed/25);
+      rotRight.easing(TWEEN.Easing.Quadratic.In);
+      rotLeft.chain(rotRight);
+      rotLeft.start();
     }
     var mod_x = object.position.x; 
     var jumpLeftXUp = new TWEEN.Tween(object.position).to({x: mod_x+3.7}, 840/speed/25).onComplete(function () {
@@ -485,7 +502,7 @@ class Animator {
     var rotArmUp = new TWEEN.Tween(rot).to({y: rot_y+val*Math.PI*0.21}, 2*520);
     var rotArmDown = new TWEEN.Tween(rot).to({y: rot_y}, 2*500);
  
-    rotArmUp.delay(11000);
+    rotArmUp.delay(time);
     rotArmDown.delay(150);
     rotArmUp.chain(rotArmDown);
     rotArmDown.chain(rotArmUp);
@@ -601,7 +618,6 @@ function spawnPlanets(){
   }, planet_spawn_rate*speed*25);  
 }
 
-
 function onKeyDown(event){
   var code = event.keyCode;
   switch(code){
@@ -618,7 +634,7 @@ function onKeyDown(event){
       if(!isJumping && lane != 0){
         lane--;
         var rotate = false;
-        if(Math.floor(Math.random() * 3) == 1) rotate = true;
+        if(Math.floor(Math.random() * 4) == 1) rotate = true;
         Animator.jumpLeft(character,rotate);
       }
       break;
@@ -627,13 +643,12 @@ function onKeyDown(event){
       if(!isJumping && lane != 2){
         lane++;
         var rotate = false;
-        if(Math.floor(Math.random() * 3) == 1) rotate = true;
+        if(Math.floor(Math.random() * 4) == 1) rotate = true;
         Animator.jumpRight(character,rotate);
       }
       break;
   }
 }
-
 
 function animate() {
   requestAnimationFrame( animate );
@@ -731,7 +746,6 @@ function render() {
     Animator.legRotation();
     loaded = 0;
   }
-  //character.getObjectByName("L_ankle1_03").rotation.y += 0.1;
   if(loaded == 0){
     checkCollisions();
     Animator.idleAnimation();
