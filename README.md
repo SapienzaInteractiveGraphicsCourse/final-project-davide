@@ -1,10 +1,10 @@
 ![title](images/title.png)
 
-A endless runner game, in space.
+An endless runner game, in space.
 
 ## Play the game
 
 Play the game [here!](https://sapienzainteractivegraphicscourse.github.io/final-project-davide/)
 
-
-![how_to_play](images/how_to_play.png)
+<br>
+<img src="./images/how_to_play.png" alt="how to play" width="320">
