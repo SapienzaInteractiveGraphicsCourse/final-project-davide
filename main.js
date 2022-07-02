@@ -15,7 +15,7 @@ const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.inner
 const renderer = new THREE.WebGLRenderer();
 const texloader = new THREE.TextureLoader();
 const lanes_tex = texloader.load('images/silver_texture.jpg');
-var speed = 0.04;
+var speed = 0.041;
 const charParent = new THREE.Group();
 scene.add(charParent);
 const objectsParent = new THREE.Group();
@@ -64,6 +64,11 @@ var planet_spawn_rate = 25000;
 var lanes_mesh = [0,0,0];
 const lanes_color = [0xA1EDF9,0xF497FF,0xffffff];
 var lanes_color_cont = 0;
+
+var fireVideo = document.createElement("video");
+fireVideo.src = 'images/fire.mp4';
+fireVideo.loop = true;
+fireVideo.muted = true;
 
 
 setButtons();
@@ -174,7 +179,7 @@ class ObjectCreator {
   constructor() {}
 
   static createSurf(){
-    const surf_color = 0x12FF88;//0xa6a6a6;
+    const surf_color = 0x08DB70;;
     const surf_geometry = new RoundedBoxGeometry( 1, 0.15, 0.6, 6, 2 );
     const surf_material1 = new THREE.MeshPhongMaterial({
       color: surf_color,
@@ -209,13 +214,6 @@ class ObjectCreator {
     reactor2.position.z += 0.04-0.15;
     reactor2.position.x += 0.54;
     reactor2.position.y -= 0.03;
-
-    var fireVideo = document.createElement("video");
-    fireVideo.src = 'images/fire.mp4';
-    fireVideo.loop = true;
-    fireVideo.autoplay = true;
-    fireVideo.muted = true;
-    //fireVideo.play();
 
     var fireTexture = new THREE.VideoTexture(fireVideo);
     fireTexture.format = THREE.RGBAFormat;
@@ -539,7 +537,9 @@ function onWindowResize(){
 
 function resetGame() {
   lanes_tex.offset.x = 0;
-  speed = 0.04;
+  if(document.getElementById('slow').checked) speed = 0.031;
+  if(document.getElementById('normal').checked) speed = 0.041;
+  if(document.getElementById('fast').checked) speed = 0.056;
   lane = 1;
   distance = 0;
   points = 0;
@@ -606,11 +606,15 @@ function setButtons(){
 
   document.getElementById('start_btn').onclick = () => {
     if(!replay){
+      fireVideo.play();
       document.getElementById('loading').style.display = 'grid';
     }else{
       points_div.innerText = "Points: " + points;
       setIntervals();
     }
+    if(document.getElementById('slow').checked) speed = 0.031;
+    if(document.getElementById('normal').checked) speed = 0.041;
+    if(document.getElementById('fast').checked) speed = 0.056;
     document.getElementById('menu').style.display = 'none';
     running = true;
   };

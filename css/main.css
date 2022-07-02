@@ -1,5 +1,6 @@
 :root {
-  --main_color: #ffd700;;
+  --main_color: #ffd700;
+  --secondary_color: #ff8707; 
 }
 
 
@@ -78,6 +79,8 @@ body {
     text-align: center;
 }
 
+
+
 #htp_title { 
   font-size: 5rem;
   margin-bottom:5rem;
@@ -93,7 +96,7 @@ body {
 #game_over_title,
 #menu_title {
     font-size: 7rem;
-    margin-bottom: 5rem;
+    margin-bottom: 4.5rem;
 }
 
 
@@ -119,6 +122,11 @@ canvas {
 #replay_btn{
   margin-top: 1.5rem;
 }
+
+#htp_btn{
+  background: var(--secondary_color);
+}
+
 .button-80 {
   background: var(--main_color);/*#fff;*/
   backface-visibility: hidden;
@@ -179,5 +187,60 @@ canvas {
 .button-80:not(:disabled):active {
   transform: translateY(.125rem);
 }
+
+#speed{
+  margin-bottom: 3.2rem;
+}
+
+#radios label {
+	cursor: pointer;
+	position: relative;
+}
+
+#radios label + label {
+	margin-left: 15px;
+}
+
+input[type="radio"] {
+	opacity: 0;
+	position: absolute;
+}
+
+input[type="radio"] + span {
+	font-family: 'Material Icons';
+	color: var(--main_color);
+	border-radius: 50%;
+	padding: 15px;
+	transition: all 0.4s;
+	-webkit-transition: all 0.4s;
+}
+
+input[type="radio"]:checked + span {
+	color: black;
+  background-color: var(--secondary_color);
+}
+
+input[type="radio"]:focus + span {
+	color: black;
+}
+
+
+
+#radios label:hover::before {
+	content: attr(for);
+	font-family: Roboto, -apple-system, SFDistantGalaxy;
+	text-transform: capitalize;
+	font-size: 15px;
+	position: absolute;
+	top: 170%;
+	right: 0;
+  left: 0;
+	opacity: 0.75;
+	background-color: transparent;
+	color: var(--main_color);	
+	padding: 2px;
+}
+
+
 
 
