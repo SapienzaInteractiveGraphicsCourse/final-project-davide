@@ -8,7 +8,7 @@ var running = false;
 var replay = false;
 var surf, surfGroup;
 var isJumping = false;
-var interval1,interval2;
+var interval1,interval2,interval3;
 var color = 0x000000;
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 100 );
@@ -22,19 +22,19 @@ const objectsParent = new THREE.Group();
 scene.add(objectsParent);
 const lanes = [-4.25,4.25,0];
 var lane = 1;
-const points_frequency = 17;
+const points_frequency = 18;
 const obstacles_frequency = 8;
 const visible_planets = [];
 const pending_planets = [];
 const objectsBoxes = [];
 const trajectories = [
-  {point_x : 10, point_y : 2, point_z : -100, x_speed : 0.01, z_speed : 0.3},
-  {point_x : -10.3, point_y : 2, point_z : -100, x_speed : -0.01, z_speed : 0.3},
-  {point_x : 12, point_y : 1, point_z : -100, x_speed : 0.01, z_speed : 0.3},
-  {point_x : -12, point_y : 4, point_z : -100, x_speed : -0.01, z_speed : 0.3},
-  {point_x : -13, point_y : 8, point_z : -100, x_speed : -0.01, z_speed : 0.3},
-  {point_x : 13, point_y : 16, point_z : -100, x_speed : 0.01, z_speed : 0.3},
-  {point_x : 13.1, point_y : -3, point_z : -100, x_speed : 0.01, z_speed : 0.3},
+  {point_x : 10.7, point_y : 2, point_z : -100, x_speed : 0.01, z_speed : 0.3},
+  {point_x : -10.4, point_y : 2, point_z : -100, x_speed : -0.01, z_speed : 0.3},
+  {point_x : 12.25, point_y : 1, point_z : -100, x_speed : 0.01, z_speed : 0.3},
+  {point_x : -12.2, point_y : 4, point_z : -100, x_speed : -0.01, z_speed : 0.3},
+  {point_x : -13.2, point_y : 8, point_z : -100, x_speed : -0.01, z_speed : 0.3},
+  {point_x : 13.6, point_y : 16, point_z : -100, x_speed : 0.01, z_speed : 0.3},
+  {point_x : 13.4, point_y : -3, point_z : -100, x_speed : 0.01, z_speed : 0.3},
   {point_x : -15.25, point_y : -4, point_z : -100, x_speed : -0.01, z_speed : 0.3},
   {point_x : -15, point_y : 22, point_z : -100, x_speed : -0.01, z_speed : 0.3},
   {point_x : 10, point_y : 25, point_z : -100, x_speed : 0.01, z_speed : 0.3},
@@ -61,6 +61,9 @@ var sound = new THREE.Audio( listener );
 var vol_on = true;
 var loaded = 0;
 var planet_spawn_rate = 25000;
+var lanes_mesh = [0,0,0];
+const lanes_color = [0xA1EDF9,0xF497FF,0xffffff];
+var lanes_color_cont = 0;
 
 
 setButtons();
@@ -105,7 +108,6 @@ function createScene(){
              loaded++;
             });
 
-
   lanes_tex.wrapS = THREE.RepeatWrapping;
   lanes_tex.wrapT = THREE.RepeatWrapping;
   lanes_tex.repeat.set(30, 1);
@@ -124,7 +126,7 @@ function createScene(){
   pending_planets.push(imageLoader("images/planet7.png",0,0,10,[4,4,4]));
   pending_planets.push(imageLoader("images/space_station.png",0,0,10,[4,4,4]));
 
-  for (let i = 0; i < points_frequency; i++) ObjectCreator.createPoint();
+  for (let i = 0; i < points_frequency; i++) ObjectCreator.createPoint(i);
   for (let i = 0; i < obstacles_frequency; i++) ObjectCreator.createObstacle(i);
   
   const character_loader = new GLTFLoader();
@@ -172,20 +174,22 @@ class ObjectCreator {
   constructor() {}
 
   static createSurf(){
-    const surf_color = 0xa6a6a6;
+    const surf_color = 0x12FF88;//0xa6a6a6;
     const surf_geometry = new RoundedBoxGeometry( 1, 0.15, 0.6, 6, 2 );
-    const surf_material1 = new THREE.MeshBasicMaterial({
+    const surf_material1 = new THREE.MeshPhongMaterial({
       color: surf_color,
       map: texloader.load('images/surf_tex2.jpg'),
+      transparent : true,
+      opacity: 0.3,
     });
-    const surf_material2 = new THREE.MeshBasicMaterial({
+    const surf_material2 = new THREE.MeshPhongMaterial({
       color: surf_color,
       map: texloader.load('images/surf_tex4.jpg'),
     });
     const surf_materials = [ surf_material2,surf_material2,surf_material1,surf_material1, surf_material2,surf_material2];
     const surf = new THREE.Mesh( surf_geometry, surf_materials);
     const reactor_geometry = new THREE.CylinderBufferGeometry(0.065, 0.065, 0.1, 16);
-    const reactor_material = new THREE.MeshBasicMaterial({ 
+    const reactor_material = new THREE.MeshPhongMaterial({ 
       color: surf_color, 
       map: texloader.load('images/surf_tex4.jpg'),
     });
@@ -209,8 +213,9 @@ class ObjectCreator {
     var fireVideo = document.createElement("video");
     fireVideo.src = 'images/fire.mp4';
     fireVideo.loop = true;
-    fireVideo.defaultMuted = true;
-    fireVideo.play();
+    fireVideo.autoplay = true;
+    fireVideo.muted = true;
+    //fireVideo.play();
 
     var fireTexture = new THREE.VideoTexture(fireVideo);
     fireTexture.format = THREE.RGBAFormat;
@@ -219,7 +224,7 @@ class ObjectCreator {
     fireTexture.generateMipmaps = false;
     
     const reactor_fire_material = new THREE.MeshPhongMaterial({ 
-      color: 0x11ffEee, 
+      color: 0xffd700,//0x11ffEee, 
       map: fireTexture,
     });
     const reactor_fire_geometry = new THREE.CylinderBufferGeometry(0.04, 0.05, 0.015, 16);
@@ -255,23 +260,31 @@ class ObjectCreator {
     const geometry = new THREE.BoxBufferGeometry( 2, 0.1, 120 );
     var tras = 0.4;
     if(x == 0) tras = 0.6;
-    const material = new THREE.MeshBasicMaterial({
+    const lane_material = new THREE.MeshBasicMaterial({
       color: 0xffffff,
       map: lanes_tex,
       transparent : true,
       opacity: tras,
     });
-    const lane = new THREE.Mesh( geometry, material );
+    const lane = new THREE.Mesh( geometry, lane_material );
+    if(x == 4.25) lanes_mesh[1] = lane;
+    else if(x == -4.25) lanes_mesh[2] = lane;
+    else lanes_mesh[0] = lane;
+    
     scene.add( lane );
     lane.position.y -= 0.6;
     lane.position.x -= x;
     lane.position.z -= 40;
   }
   
-  static createPoint(){
+  static createPoint(i){
     const geometry = new THREE.BoxBufferGeometry( 1, 1, 1 );
+    var c = 0xffd700;
+    if(i == 0){
+      c = 0xff0000;
+    }
     const material = new THREE.MeshPhongMaterial({
-      color: 0xffd700,
+      color: c,
     });
     const point = new THREE.Mesh( geometry, material );
     objectsParent.add(point);
@@ -296,7 +309,7 @@ class ObjectCreator {
       tex = texloader.load('images/metal_tex.jpg');
     }
     const geometry = new THREE.BoxBufferGeometry(1,1,1);
-    const material = new THREE.MeshBasicMaterial({
+    const material = new THREE.MeshPhongMaterial({
       color: 0xffffff,
       map: tex,
     });
@@ -532,11 +545,24 @@ function resetGame() {
   points = 0;
   replay = true;
   character.position.set(0.102, 1, 0);
-  clearInterval(interval1);
-  clearInterval(interval2);
+  for(var i = 0; i < lanes_mesh.length; i++){
+    var tras = 0.4;
+    if(i == 0) tras = 0.6;
+    const lane_material = new THREE.MeshBasicMaterial({
+      color: 0xffffff,
+      map: lanes_tex,
+      transparent : true,
+      opacity: tras,
+    });
+    lanes_mesh[i].material = lane_material;  
+  }
+  lanes_color_cont = 0;
   for( var i = 0; i < objectsParent.children.length; i++){
     var child = objectsParent.children[i];
     child.position.z = -objectsParent.position.z-85-Math.floor(Math.random() * 160);
+    if( child.userData.type == "p"){
+      child.position.y = 0.8;
+    }
     objectsBoxes[i].setFromObject(child);
   }
 
@@ -572,8 +598,9 @@ function setButtons(){
   
   document.getElementById('replay_btn').onclick = () => {
     gameOver_div.style.display = 'none';
-    spawnPlanets();
+    setIntervals();
     resetGame();
+    points_div.innerText = "Points: " + points;
     running = true;
   };  
 
@@ -581,7 +608,8 @@ function setButtons(){
     if(!replay){
       document.getElementById('loading').style.display = 'grid';
     }else{
-      spawnPlanets();
+      points_div.innerText = "Points: " + points;
+      setIntervals();
     }
     document.getElementById('menu').style.display = 'none';
     running = true;
@@ -605,7 +633,7 @@ function setButtons(){
 
 }
 
-function spawnPlanets(){
+function setIntervals(){
   interval1 = setInterval(function () {speed += 0.001}, 11000);
   interval2 = setInterval(function () {
     var rand = Math.floor(Math.random() * pending_planets.length);
@@ -616,6 +644,21 @@ function spawnPlanets(){
       visible_planets.push([planet, [tr.x_speed,tr.z_speed]]);
     }
   }, planet_spawn_rate*speed*25);  
+  interval3 = setInterval(function () {
+    for(var i = 0; i < lanes_mesh.length; i++){
+      var tras = 0.4;
+      if(i == 0) tras = 0.6;
+      const lane_material = new THREE.MeshBasicMaterial({
+        color: lanes_color[lanes_color_cont%lanes_color.length],
+        map: lanes_tex,
+        transparent : true,
+        opacity: tras,
+      });
+      lanes_mesh[i].material = lane_material;
+      
+    }
+    lanes_color_cont++;
+  }, 60000);
 }
 
 function onKeyDown(event){
@@ -665,11 +708,17 @@ function checkCollisions() {
     if (surfBox.intersectsBox(box)) {
       if( box.userData.type == "p"){
         var obj = objectsParent.children[i];
-        obj.position.z = -objectsParent.position.z-85-Math.floor(Math.random() * 150);
+        obj.position.z = -objectsParent.position.z-90-Math.floor(Math.random() * 170);
         obj.position.x = lanes[Math.floor(Math.random() * 3)];
+        obj.position.y = 0.8;
         objectsBoxes[i].setFromObject(obj);
-        points++;
-        points_div.innerText = "Points: " + points;
+        if(obj.material.color.r == 1 && obj.material.color.g == 0){
+          points += 50;
+          points_div.innerText = "Points: " + points;
+        }else{
+          points += 10;
+          points_div.innerText = "Points: " + points;
+        }
       }else{
         gameOver();
       }
@@ -679,7 +728,10 @@ function checkCollisions() {
 
 function gameOver(){
   running = false;
-  tscoreGameOver_div.innerHTML = "Total Score: " + (parseInt(distance) + points*10);
+  clearInterval(interval1);
+  clearInterval(interval2);
+  clearInterval(interval3);
+  tscoreGameOver_div.innerHTML = "Total Score: " + (parseInt(distance) + points);
   distanceGameOver_div.innerHTML = "Distance: " + parseInt(distance);
   pointsGameOver_div.innerHTML = "Points: " + points;
   setTimeout(() => {      
@@ -691,7 +743,6 @@ function updateObjectsPosition(){
   var i = 0;
   objectsParent.traverse((child) => {
     if (child.type == "Mesh") {
-      
       if (child.userData.type == "p"){
         Animator.cubesMovement(child);
       }
@@ -699,8 +750,11 @@ function updateObjectsPosition(){
       i++;
       const z_pos = child.position.z + objectsParent.position.z;
       if(z_pos > 10){
-        child.position.z = -objectsParent.position.z-85-Math.floor(Math.random() * 160);
+        child.position.z = -objectsParent.position.z-90-Math.floor(Math.random() * 170);
         child.position.x = lanes[Math.floor(Math.random() * 3)];
+        if(child.userData.type == "p"){
+          child.position.y = 0.8;
+        }
       }
   }
   });
@@ -728,7 +782,7 @@ function updatePlanets(){
 function updateScore(){
   distance += speed*2.5;
   distance_div.innerHTML = "Distance: " + parseInt(distance);
-  total_score_div.innerHTML = "Total Score: " + (parseInt(distance) + points*10);
+  total_score_div.innerHTML = "Total Score: " + (parseInt(distance) + points);
 }
 
 
@@ -740,7 +794,7 @@ function render() {
     replay = false;
   }
   if(loaded == 4+obstacles_frequency+points_frequency) {
-    spawnPlanets();
+    setIntervals();
     document.getElementById('loading').style.display = 'none';
     Animator.elbowRotation(1,11000);
     Animator.legRotation();
@@ -757,6 +811,5 @@ function render() {
     lanes_tex.offset.x = (lanes_tex.offset.x+speed*2.5)%4 - 2;
     renderer.render(scene, camera);
   }
-
 }
 
