@@ -179,7 +179,7 @@ class ObjectCreator {
   constructor() {}
 
   static createSurf(){
-    const surf_color = 0x08DB70;;
+    const surf_color = 0xEA3C3C;//0x08DB70;
     const surf_geometry = new RoundedBoxGeometry( 1, 0.15, 0.6, 6, 2 );
     const surf_material1 = new THREE.MeshPhongMaterial({
       color: surf_color,

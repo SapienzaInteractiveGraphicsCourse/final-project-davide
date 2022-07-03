@@ -21,7 +21,7 @@ body {
     position: absolute;
     left: 0;
     top: 0;
-    width: 18%;
+    width: 20%;
     height: fit-content;
     font-size: 1.9rem;
     color: var(--main_color);/*white;*/
