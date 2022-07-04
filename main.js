@@ -3,19 +3,22 @@ import { GLTFLoader } from 'https://cdn.skypack.dev/three@0.134.0/examples/jsm/l
 import { RoundedBoxGeometry } from 'https://cdn.skypack.dev/three@0.134.0/examples/jsm/geometries/RoundedBoxGeometry.js';
 import { TWEEN } from 'https://cdn.skypack.dev/three@0.134.0/examples/jsm/libs/tween.module.min';
 
+
 var character, surfBox;
 var running = false;
 var replay = false;
 var surf, surfGroup;
 var isJumping = false;
 var interval1,interval2,interval3;
-var color = 0x000000;
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 100 );
 const renderer = new THREE.WebGLRenderer();
 const texloader = new THREE.TextureLoader();
 const lanes_tex = texloader.load('images/silver_texture.jpg');
-var speed = 0.041;
+const slow_speed = 0.031;
+const normal_speed = 0.0415;
+const fast_speed = 0.057;
+var speed = normal_speed;
 const charParent = new THREE.Group();
 scene.add(charParent);
 const objectsParent = new THREE.Group();
@@ -75,7 +78,7 @@ setButtons();
 window.onload  = createScene;
 
 function createScene(){
-  renderer.setClearColor(color);
+  renderer.setClearColor(0x000000);
   camera.position.z = 6;
   camera.position.x = 0;
   camera.position.y = 6;
@@ -492,15 +495,15 @@ class Animator {
     character.getObjectByName("R_shoulder_031").rotation.x -= 0.004*idleRotation;
   }
 
-  static legRotation(){
+  static legRotation(time){
     var rot = character.getObjectByName("L_ankle1_03").rotation;
     var rot_z = rot.z;
 
     var rotFoot1= new TWEEN.Tween(rot).to({z: rot_z+Math.PI*0.15}, 2*470);
     var rotFoot2 = new TWEEN.Tween(rot).to({z: rot_z}, 2*470);
  
-    rotFoot1.delay(9000);
-    rotFoot2.delay(9000);
+    rotFoot1.delay(time);
+    rotFoot2.delay(time);
     rotFoot1.chain(rotFoot2);
     rotFoot2.chain(rotFoot1);
     rotFoot1.start();
@@ -537,9 +540,9 @@ function onWindowResize(){
 
 function resetGame() {
   lanes_tex.offset.x = 0;
-  if(document.getElementById('slow').checked) speed = 0.031;
-  if(document.getElementById('normal').checked) speed = 0.041;
-  if(document.getElementById('fast').checked) speed = 0.056;
+  if(document.getElementById('slow').checked) speed = slow_speed;
+  if(document.getElementById('normal').checked) speed = normal_speed;
+  if(document.getElementById('fast').checked) speed = fast_speed;
   lane = 1;
   distance = 0;
   points = 0;
@@ -612,9 +615,9 @@ function setButtons(){
       points_div.innerText = "Points: " + points;
       setIntervals();
     }
-    if(document.getElementById('slow').checked) speed = 0.031;
-    if(document.getElementById('normal').checked) speed = 0.041;
-    if(document.getElementById('fast').checked) speed = 0.056;
+    if(document.getElementById('slow').checked) speed = slow_speed;
+    if(document.getElementById('normal').checked) speed = normal_speed;
+    if(document.getElementById('fast').checked) speed = fast_speed;
     document.getElementById('menu').style.display = 'none';
     running = true;
   };
@@ -801,7 +804,7 @@ function render() {
     setIntervals();
     document.getElementById('loading').style.display = 'none';
     Animator.elbowRotation(1,11000);
-    Animator.legRotation();
+    Animator.legRotation(9000);
     loaded = 0;
   }
   if(loaded == 0){

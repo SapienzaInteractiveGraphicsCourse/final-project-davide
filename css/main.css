@@ -29,6 +29,7 @@ body {
     padding: 0.5rem;
     font-family: 'SFDistantGalaxy';
     margin-left: 0.5rem;
+    margin-top: 0.2rem;
     background-color: black;
 }
 
@@ -186,6 +187,11 @@ canvas {
 
 .button-80:not(:disabled):active {
   transform: translateY(.125rem);
+}
+
+#speed_text{
+  font-size: 2.8rem;
+  margin-bottom: 1rem;
 }
 
 #speed{
